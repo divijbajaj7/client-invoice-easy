@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +18,7 @@ import {
 
 const Dashboard = () => {
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("invoices");
 
   const stats = [
@@ -97,7 +99,7 @@ const Dashboard = () => {
 
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card className="cursor-pointer hover:shadow-lg transition-shadow">
+          <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate("/create-invoice")}>
             <CardContent className="p-6 text-center">
               <div className="bg-blue-100 p-3 rounded-full w-fit mx-auto mb-4">
                 <Plus className="h-8 w-8 text-blue-600" />
@@ -136,7 +138,7 @@ const Dashboard = () => {
                 <CardTitle>Recent Invoices</CardTitle>
                 <CardDescription>Your latest invoice activity</CardDescription>
               </div>
-              <Button>
+              <Button onClick={() => navigate("/create-invoice")}>
                 <Plus className="h-4 w-4 mr-2" />
                 New Invoice
               </Button>
@@ -148,7 +150,7 @@ const Dashboard = () => {
                 <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">No invoices yet</h3>
                 <p className="text-gray-600 mb-4">Get started by creating your first invoice</p>
-                <Button>
+                <Button onClick={() => navigate("/create-invoice")}>
                   <Plus className="h-4 w-4 mr-2" />
                   Create Your First Invoice
                 </Button>
