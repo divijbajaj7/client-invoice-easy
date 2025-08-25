@@ -1,11 +1,152 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, FileText } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { ArrowLeft, FileText, Plus, Trash2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
+
+const invoiceSchema = z.object({
+  companyId: z.string().min(1, "Company is required"),
+  clientId: z.string().min(1, "Client is required"),
+  invoiceNumber: z.string().min(1, "Invoice number is required"),
+  invoiceDate: z.string().min(1, "Invoice date is required"),
+  dueDate: z.string().optional(),
+  gstRate: z.number().min(0).max(100),
+  notes: z.string().optional(),
+});
+
+interface InvoiceItem {
+  id: string;
+  description: string;
+  quantity: number;
+  rate: number;
+  amount: number;
+}
 
 const CreateInvoice = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [companies, setCompanies] = useState<any[]>([]);
+  const [clients, setClients] = useState<any[]>([]);
+  const [items, setItems] = useState<InvoiceItem[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const form = useForm<z.infer<typeof invoiceSchema>>({
+    resolver: zodResolver(invoiceSchema),
+    defaultValues: {
+      companyId: "",
+      clientId: "",
+      invoiceNumber: "",
+      invoiceDate: new Date().toISOString().split('T')[0],
+      dueDate: "",
+      gstRate: 18,
+      notes: "",
+    },
+  });
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!user) return;
+
+      const [companiesResult, clientsResult] = await Promise.all([
+        supabase.from("companies").select("*").eq("user_id", user.id),
+        supabase.from("clients").select("*").eq("user_id", user.id),
+      ]);
+
+      if (companiesResult.data) setCompanies(companiesResult.data);
+      if (clientsResult.data) setClients(clientsResult.data);
+    };
+
+    fetchData();
+  }, [user]);
+
+  const addItem = () => {
+    const newItem: InvoiceItem = {
+      id: Math.random().toString(36).substr(2, 9),
+      description: "",
+      quantity: 1,
+      rate: 0,
+      amount: 0,
+    };
+    setItems([...items, newItem]);
+  };
+
+  const updateItem = (id: string, field: keyof InvoiceItem, value: any) => {
+    setItems(items.map(item => {
+      if (item.id === id) {
+        const updatedItem = { ...item, [field]: value };
+        if (field === 'quantity' || field === 'rate') {
+          updatedItem.amount = updatedItem.quantity * updatedItem.rate;
+        }
+        return updatedItem;
+      }
+      return item;
+    }));
+  };
+
+  const removeItem = (id: string) => {
+    setItems(items.filter(item => item.id !== id));
+  };
+
+  const calculateTotals = () => {
+    const subtotal = items.reduce((sum, item) => sum + item.amount, 0);
+    const gstRate = form.watch("gstRate") || 0;
+    const gstAmount = (subtotal * gstRate) / 100;
+    const total = subtotal + gstAmount;
+    return { subtotal, gstAmount, total };
+  };
+
+  const onSubmit = async (values: z.infer<typeof invoiceSchema>) => {
+    if (!user) return;
+    if (items.length === 0) {
+      toast.error("Please add at least one item");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const { subtotal, gstAmount, total } = calculateTotals();
+
+      const { error } = await supabase.from("invoices").insert({
+        user_id: user.id,
+        company_id: values.companyId,
+        client_id: values.clientId,
+        invoice_number: values.invoiceNumber,
+        invoice_date: values.invoiceDate,
+        due_date: values.dueDate || null,
+        subtotal,
+        gst_rate: values.gstRate,
+        gst_amount: gstAmount,
+        total_amount: total,
+        items: JSON.parse(JSON.stringify(items)),
+        notes: values.notes || null,
+        status: "draft",
+      });
+
+      if (error) throw error;
+
+      toast.success("Invoice created successfully!");
+      navigate("/");
+    } catch (error) {
+      console.error("Error creating invoice:", error);
+      toast.error("Failed to create invoice");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const { subtotal, gstAmount, total } = calculateTotals();
 
   return (
     <div className="min-h-screen bg-background">
@@ -30,25 +171,264 @@ const CreateInvoice = () => {
         </div>
       </header>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>Invoice Creation</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-center py-12">
-              <FileText className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-medium mb-2">Invoice Creator Coming Soon</h3>
-              <p className="text-muted-foreground mb-4">
-                The invoice creation form will be implemented here. 
-                You'll be able to add items, calculate GST, and generate professional invoices.
-              </p>
-              <Button onClick={() => navigate("/")}>
-                Back to Dashboard
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            {/* Basic Information */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Invoice Details</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="companyId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Company</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select company" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {companies.map((company) => (
+                              <SelectItem key={company.id} value={company.id}>
+                                {company.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="clientId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Client</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select client" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {clients.map((client) => (
+                              <SelectItem key={client.id} value={client.id}>
+                                {client.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="invoiceNumber"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Invoice Number</FormLabel>
+                        <FormControl>
+                          <Input placeholder="INV-001" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="invoiceDate"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Invoice Date</FormLabel>
+                        <FormControl>
+                          <Input type="date" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="dueDate"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Due Date (Optional)</FormLabel>
+                        <FormControl>
+                          <Input type="date" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="gstRate"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>GST Rate (%)</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            step="0.01"
+                            {...field}
+                            onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Items */}
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <CardTitle>Invoice Items</CardTitle>
+                  <Button type="button" onClick={addItem} variant="outline" size="sm">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Item
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {items.map((item, index) => (
+                    <div key={item.id} className="grid grid-cols-12 gap-4 items-end p-4 border rounded-lg">
+                      <div className="col-span-4">
+                        <Label>Description</Label>
+                        <Input
+                          placeholder="Item description"
+                          value={item.description}
+                          onChange={(e) => updateItem(item.id, 'description', e.target.value)}
+                        />
+                      </div>
+                      <div className="col-span-2">
+                        <Label>Quantity</Label>
+                        <Input
+                          type="number"
+                          min="1"
+                          value={item.quantity}
+                          onChange={(e) => updateItem(item.id, 'quantity', parseInt(e.target.value) || 1)}
+                        />
+                      </div>
+                      <div className="col-span-2">
+                        <Label>Rate</Label>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          value={item.rate}
+                          onChange={(e) => updateItem(item.id, 'rate', parseFloat(e.target.value) || 0)}
+                        />
+                      </div>
+                      <div className="col-span-3">
+                        <Label>Amount</Label>
+                        <Input
+                          value={item.amount.toFixed(2)}
+                          readOnly
+                          className="bg-muted"
+                        />
+                      </div>
+                      <div className="col-span-1">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => removeItem(item.id)}
+                          className="w-full"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+
+                  {items.length === 0 && (
+                    <div className="text-center py-8 text-muted-foreground">
+                      No items added. Click "Add Item" to get started.
+                    </div>
+                  )}
+                </div>
+
+                {/* Totals */}
+                {items.length > 0 && (
+                  <div className="mt-6 space-y-2 text-right">
+                    <div className="flex justify-end">
+                      <div className="w-64 space-y-2">
+                        <div className="flex justify-between">
+                          <span>Subtotal:</span>
+                          <span>₹{subtotal.toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>GST ({form.watch("gstRate")}%):</span>
+                          <span>₹{gstAmount.toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between font-bold text-lg border-t pt-2">
+                          <span>Total:</span>
+                          <span>₹{total.toFixed(2)}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Notes */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Additional Notes</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <FormField
+                  control={form.control}
+                  name="notes"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Additional notes or terms..."
+                          className="min-h-[100px]"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+            </Card>
+
+            {/* Actions */}
+            <div className="flex justify-end space-x-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => navigate("/")}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={loading}>
+                {loading ? "Creating..." : "Create Invoice"}
               </Button>
             </div>
-          </CardContent>
-        </Card>
+          </form>
+        </Form>
       </div>
     </div>
   );
