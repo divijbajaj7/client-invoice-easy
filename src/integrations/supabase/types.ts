@@ -55,37 +55,52 @@ export type Database = {
       }
       companies: {
         Row: {
+          account_number: string | null
           address: string | null
+          bank_name: string | null
+          branch: string | null
           created_at: string
           email: string | null
           gst_number: string | null
           id: string
+          ifsc_code: string | null
           logo_url: string | null
           name: string
+          pan_number: string | null
           phone: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          account_number?: string | null
           address?: string | null
+          bank_name?: string | null
+          branch?: string | null
           created_at?: string
           email?: string | null
           gst_number?: string | null
           id?: string
+          ifsc_code?: string | null
           logo_url?: string | null
           name: string
+          pan_number?: string | null
           phone?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          account_number?: string | null
           address?: string | null
+          bank_name?: string | null
+          branch?: string | null
           created_at?: string
           email?: string | null
           gst_number?: string | null
           id?: string
+          ifsc_code?: string | null
           logo_url?: string | null
           name?: string
+          pan_number?: string | null
           phone?: string | null
           updated_at?: string
           user_id?: string

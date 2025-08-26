@@ -54,11 +54,11 @@ const CompanyProfile = () => {
           phone: data.phone || "",
           email: data.email || "",
           gst_number: data.gst_number || "",
-          pan_number: data.pan_number || "",
-          bank_name: data.bank_name || "",
-          account_number: data.account_number || "",
-          ifsc_code: data.ifsc_code || "",
-          branch: data.branch || "",
+          pan_number: (data as any).pan_number || "",
+          bank_name: (data as any).bank_name || "",
+          account_number: (data as any).account_number || "",
+          ifsc_code: (data as any).ifsc_code || "",
+          branch: (data as any).branch || "",
         });
       }
     } catch (error) {
