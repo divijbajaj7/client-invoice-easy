@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import CreateInvoice from "./pages/CreateInvoice";
+import ManageClients from "./pages/ManageClients";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -27,6 +28,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <CreateInvoice />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/manage-clients" 
+              element={
+                <ProtectedRoute>
+                  <ManageClients />
                 </ProtectedRoute>
               } 
             />

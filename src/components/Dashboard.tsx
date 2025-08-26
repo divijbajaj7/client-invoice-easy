@@ -109,7 +109,7 @@ const Dashboard = () => {
             </CardContent>
           </Card>
 
-          <Card className="cursor-pointer hover:shadow-lg transition-shadow">
+          <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate("/manage-clients")}>
             <CardContent className="p-6 text-center">
               <div className="bg-green-100 p-3 rounded-full w-fit mx-auto mb-4">
                 <Users className="h-8 w-8 text-green-600" />
