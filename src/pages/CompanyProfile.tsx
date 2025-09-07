@@ -121,7 +121,7 @@ const CompanyProfile = () => {
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center h-16">
-            <Button variant="ghost" onClick={() => navigate("/")} className="mr-4">
+            <Button variant="ghost" onClick={() => navigate("/dashboard")} className="mr-4">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Dashboard
             </Button>
@@ -256,7 +256,7 @@ const CompanyProfile = () => {
                 <Save className="h-4 w-4 mr-2" />
                 {loading ? "Saving..." : "Save Company Profile"}
               </Button>
-              <Button variant="outline" onClick={() => navigate("/")}>
+              <Button variant="outline" onClick={() => navigate("/dashboard")}>
                 Cancel
               </Button>
             </div>

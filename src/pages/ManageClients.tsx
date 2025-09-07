@@ -191,7 +191,7 @@ const ManageClients = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <Button variant="ghost" size="sm" onClick={() => navigate("/")} className="mr-4">
+              <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")} className="mr-4">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to Dashboard
               </Button>

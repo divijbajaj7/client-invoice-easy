@@ -158,7 +158,7 @@ const CreateInvoice = () => {
               <Button 
                 variant="ghost" 
                 size="sm" 
-                onClick={() => navigate("/")}
+                onClick={() => navigate("/dashboard")}
                 className="mr-4"
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
@@ -419,7 +419,7 @@ const CreateInvoice = () => {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => navigate("/")}
+                onClick={() => navigate("/dashboard")}
               >
                 Cancel
               </Button>
