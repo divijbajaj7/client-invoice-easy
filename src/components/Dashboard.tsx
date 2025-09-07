@@ -25,8 +25,7 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("invoices");
   const [recentInvoices, setRecentInvoices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-
-  const stats = [
+  const [stats, setStats] = useState([
     {
       title: "Total Invoices",
       value: "0",
@@ -51,15 +50,16 @@ const Dashboard = () => {
       icon: Receipt,
       color: "text-purple-600 bg-purple-100"
     }
-  ];
+  ]);
 
   useEffect(() => {
-    const fetchInvoices = async () => {
+    const fetchData = async () => {
       if (!user) return;
       
       setLoading(true);
       try {
-        const { data: invoices, error } = await supabase
+        // Fetch invoices
+        const { data: invoices, error: invoicesError } = await supabase
           .from("invoices")
           .select(`
             *,
@@ -67,20 +67,70 @@ const Dashboard = () => {
             clients!invoices_client_id_fkey(name)
           `)
           .eq("user_id", user.id)
-          .order("created_at", { ascending: false })
-          .limit(5);
+          .order("created_at", { ascending: false });
 
-        if (error) throw error;
-        setRecentInvoices(invoices || []);
+        if (invoicesError) throw invoicesError;
+
+        // Fetch clients count
+        const { count: clientsCount, error: clientsError } = await supabase
+          .from("clients")
+          .select("*", { count: "exact", head: true })
+          .eq("user_id", user.id);
+
+        if (clientsError) throw clientsError;
+
+        // Fetch companies count
+        const { count: companiesCount, error: companiesError } = await supabase
+          .from("companies")
+          .select("*", { count: "exact", head: true })
+          .eq("user_id", user.id);
+
+        if (companiesError) throw companiesError;
+
+        // Calculate this month's total
+        const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM format
+        const thisMonthTotal = (invoices || [])
+          .filter(invoice => invoice.created_at.startsWith(currentMonth))
+          .reduce((total, invoice) => total + parseFloat(invoice.total_amount.toString()), 0);
+
+        // Update stats
+        setStats([
+          {
+            title: "Total Invoices",
+            value: (invoices?.length || 0).toString(),
+            icon: FileText,
+            color: "text-blue-600 bg-blue-100"
+          },
+          {
+            title: "Clients",
+            value: (clientsCount || 0).toString(),
+            icon: Users,
+            color: "text-green-600 bg-green-100"
+          },
+          {
+            title: "Companies",
+            value: (companiesCount || 0).toString(),
+            icon: Building2,
+            color: "text-orange-600 bg-orange-100"
+          },
+          {
+            title: "This Month",
+            value: `₹${thisMonthTotal.toLocaleString('en-IN')}`,
+            icon: Receipt,
+            color: "text-purple-600 bg-purple-100"
+          }
+        ]);
+
+        setRecentInvoices((invoices || []).slice(0, 5));
       } catch (error) {
-        console.error("Error fetching invoices:", error);
-        toast.error("Failed to fetch invoices");
+        console.error("Error fetching data:", error);
+        toast.error("Failed to fetch data");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchInvoices();
+    fetchData();
   }, [user]);
 
   const generatePDF = async (invoice: any) => {
