@@ -86,52 +86,8 @@ const Dashboard = () => {
   const generatePDF = async (invoice: any) => {
     try {
       // Dynamic import to avoid SSR issues
-      const jsPDF = (await import('jspdf')).default;
-      
-      const doc = new jsPDF();
-      
-      // Add title
-      doc.setFontSize(20);
-      doc.text('INVOICE', 20, 30);
-      
-      // Add invoice details
-      doc.setFontSize(12);
-      doc.text(`Invoice Number: ${invoice.invoice_number}`, 20, 50);
-      doc.text(`Date: ${new Date(invoice.invoice_date).toLocaleDateString()}`, 20, 60);
-      doc.text(`Due Date: ${invoice.due_date ? new Date(invoice.due_date).toLocaleDateString() : 'N/A'}`, 20, 70);
-      
-      // Add company and client info
-      doc.text(`Company: ${invoice.companies?.name || 'N/A'}`, 20, 90);
-      doc.text(`Client: ${invoice.clients?.name || 'N/A'}`, 20, 100);
-      
-      // Add items
-      doc.text('Items:', 20, 120);
-      let yPos = 130;
-      
-      if (invoice.items && Array.isArray(invoice.items)) {
-        invoice.items.forEach((item: any, index: number) => {
-          doc.text(`${index + 1}. ${item.description}`, 20, yPos);
-          doc.text(`Qty: ${item.quantity} x ₹${item.rate} = ₹${item.amount}`, 30, yPos + 10);
-          yPos += 20;
-        });
-      }
-      
-      // Add totals
-      yPos += 10;
-      doc.text(`Subtotal: ₹${invoice.subtotal}`, 20, yPos);
-      doc.text(`GST (${invoice.gst_rate}%): ₹${invoice.gst_amount}`, 20, yPos + 10);
-      doc.setFontSize(14);
-      doc.text(`Total: ₹${invoice.total_amount}`, 20, yPos + 25);
-      
-      // Add notes if any
-      if (invoice.notes) {
-        yPos += 40;
-        doc.setFontSize(12);
-        doc.text('Notes:', 20, yPos);
-        doc.text(invoice.notes, 20, yPos + 10);
-      }
-      
-      // Save the PDF
+      const { generateInvoicePDF } = await import('@/utils/pdfGenerator');
+      const doc = generateInvoicePDF(invoice);
       doc.save(`invoice-${invoice.invoice_number}.pdf`);
       toast.success("PDF downloaded successfully!");
     } catch (error) {
