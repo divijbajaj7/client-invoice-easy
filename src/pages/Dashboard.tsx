@@ -1,8 +1,8 @@
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
-import Dashboard from "@/components/Dashboard";
+import DashboardComponent from "@/components/Dashboard";
 
-const Index = () => {
+const Dashboard = () => {
   const { user, loading } = useAuth();
 
   if (loading) {
@@ -17,7 +17,7 @@ const Index = () => {
     return <Navigate to="/auth" replace />;
   }
 
-  return <Dashboard />;
+  return <DashboardComponent />;
 };
 
-export default Index;
+export default Dashboard;

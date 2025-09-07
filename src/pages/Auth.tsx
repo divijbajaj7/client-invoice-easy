@@ -18,7 +18,7 @@ const Auth = () => {
     // Check if user is already logged in
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
-        window.location.href = "/";
+        window.location.href = "/dashboard";
       }
     });
   }, []);
@@ -34,7 +34,7 @@ const Auth = () => {
           password,
         });
         if (error) throw error;
-        window.location.href = "/";
+        window.location.href = "/dashboard";
       } else {
         const redirectUrl = `${window.location.origin}/`;
         const { error } = await supabase.auth.signUp({
