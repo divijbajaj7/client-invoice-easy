@@ -282,6 +282,14 @@ const Dashboard = () => {
                       <Button
                         variant="outline"
                         size="sm"
+                        onClick={() => navigate(`/view-invoice/${invoice.id}`)}
+                      >
+                        <Eye className="h-4 w-4 mr-2" />
+                        View
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
                         onClick={() => generatePDF(invoice)}
                       >
                         <Download className="h-4 w-4 mr-2" />
