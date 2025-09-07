@@ -16,7 +16,8 @@ import {
   Download,
   Mail,
   Calendar,
-  Eye
+  Eye,
+  Trash2
 } from "lucide-react";
 
 const Dashboard = () => {
@@ -143,6 +144,47 @@ const Dashboard = () => {
     } catch (error) {
       console.error("Error generating PDF:", error);
       toast.error("Failed to generate PDF");
+    }
+  };
+
+  const deleteInvoice = async (invoiceId: string) => {
+    if (!confirm("Are you sure you want to delete this invoice? This action cannot be undone.")) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("invoices")
+        .delete()
+        .eq("id", invoiceId)
+        .eq("user_id", user?.id);
+
+      if (error) throw error;
+
+      // Update the recent invoices state
+      setRecentInvoices(prev => prev.filter(invoice => invoice.id !== invoiceId));
+      
+      // Refresh stats
+      const currentMonth = new Date().toISOString().slice(0, 7);
+      const updatedInvoices = recentInvoices.filter(invoice => invoice.id !== invoiceId);
+      const thisMonthTotal = updatedInvoices
+        .filter(invoice => invoice.created_at.startsWith(currentMonth))
+        .reduce((total, invoice) => total + parseFloat(invoice.total_amount.toString()), 0);
+
+      setStats(prev => prev.map(stat => {
+        if (stat.title === "Total Invoices") {
+          return { ...stat, value: (updatedInvoices.length).toString() };
+        }
+        if (stat.title === "This Month") {
+          return { ...stat, value: `₹${thisMonthTotal.toLocaleString('en-IN')}` };
+        }
+        return stat;
+      }));
+
+      toast.success("Invoice deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting invoice:", error);
+      toast.error("Failed to delete invoice");
     }
   };
 
@@ -294,6 +336,15 @@ const Dashboard = () => {
                       >
                         <Download className="h-4 w-4 mr-2" />
                         Download PDF
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => deleteInvoice(invoice.id)}
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete
                       </Button>
                     </div>
                   </div>
