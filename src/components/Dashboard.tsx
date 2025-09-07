@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import { 
   FileText, 
   Users, 
@@ -13,13 +15,16 @@ import {
   Receipt,
   Download,
   Mail,
-  Calendar
+  Calendar,
+  Eye
 } from "lucide-react";
 
 const Dashboard = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("invoices");
+  const [recentInvoices, setRecentInvoices] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const stats = [
     {
@@ -48,7 +53,94 @@ const Dashboard = () => {
     }
   ];
 
-  const recentInvoices = [
+  useEffect(() => {
+    const fetchInvoices = async () => {
+      if (!user) return;
+      
+      setLoading(true);
+      try {
+        const { data: invoices, error } = await supabase
+          .from("invoices")
+          .select(`
+            *,
+            companies!invoices_company_id_fkey(name),
+            clients!invoices_client_id_fkey(name)
+          `)
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(5);
+
+        if (error) throw error;
+        setRecentInvoices(invoices || []);
+      } catch (error) {
+        console.error("Error fetching invoices:", error);
+        toast.error("Failed to fetch invoices");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchInvoices();
+  }, [user]);
+
+  const generatePDF = async (invoice: any) => {
+    try {
+      // Dynamic import to avoid SSR issues
+      const jsPDF = (await import('jspdf')).default;
+      
+      const doc = new jsPDF();
+      
+      // Add title
+      doc.setFontSize(20);
+      doc.text('INVOICE', 20, 30);
+      
+      // Add invoice details
+      doc.setFontSize(12);
+      doc.text(`Invoice Number: ${invoice.invoice_number}`, 20, 50);
+      doc.text(`Date: ${new Date(invoice.invoice_date).toLocaleDateString()}`, 20, 60);
+      doc.text(`Due Date: ${invoice.due_date ? new Date(invoice.due_date).toLocaleDateString() : 'N/A'}`, 20, 70);
+      
+      // Add company and client info
+      doc.text(`Company: ${invoice.companies?.name || 'N/A'}`, 20, 90);
+      doc.text(`Client: ${invoice.clients?.name || 'N/A'}`, 20, 100);
+      
+      // Add items
+      doc.text('Items:', 20, 120);
+      let yPos = 130;
+      
+      if (invoice.items && Array.isArray(invoice.items)) {
+        invoice.items.forEach((item: any, index: number) => {
+          doc.text(`${index + 1}. ${item.description}`, 20, yPos);
+          doc.text(`Qty: ${item.quantity} x ₹${item.rate} = ₹${item.amount}`, 30, yPos + 10);
+          yPos += 20;
+        });
+      }
+      
+      // Add totals
+      yPos += 10;
+      doc.text(`Subtotal: ₹${invoice.subtotal}`, 20, yPos);
+      doc.text(`GST (${invoice.gst_rate}%): ₹${invoice.gst_amount}`, 20, yPos + 10);
+      doc.setFontSize(14);
+      doc.text(`Total: ₹${invoice.total_amount}`, 20, yPos + 25);
+      
+      // Add notes if any
+      if (invoice.notes) {
+        yPos += 40;
+        doc.setFontSize(12);
+        doc.text('Notes:', 20, yPos);
+        doc.text(invoice.notes, 20, yPos + 10);
+      }
+      
+      // Save the PDF
+      doc.save(`invoice-${invoice.invoice_number}.pdf`);
+      toast.success("PDF downloaded successfully!");
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      toast.error("Failed to generate PDF");
+    }
+  };
+
+  const recentInvoicesOld = [
     // Placeholder data - will be replaced with real data
   ];
 
@@ -145,7 +237,12 @@ const Dashboard = () => {
             </div>
           </CardHeader>
           <CardContent>
-            {recentInvoices.length === 0 ? (
+            {loading ? (
+              <div className="text-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                <p className="text-muted-foreground">Loading invoices...</p>
+              </div>
+            ) : recentInvoices.length === 0 ? (
               <div className="text-center py-12">
                 <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">No invoices yet</h3>
@@ -157,7 +254,36 @@ const Dashboard = () => {
               </div>
             ) : (
               <div className="space-y-4">
-                {/* Invoice list will go here */}
+                {recentInvoices.map((invoice) => (
+                  <div key={invoice.id} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-3">
+                        <div className="bg-blue-100 p-2 rounded-lg">
+                          <FileText className="h-5 w-5 text-blue-600" />
+                        </div>
+                        <div>
+                          <h4 className="font-medium">{invoice.invoice_number}</h4>
+                          <p className="text-sm text-muted-foreground">
+                            {invoice.clients?.name} • ₹{invoice.total_amount}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Badge variant={invoice.status === 'paid' ? 'default' : 'secondary'}>
+                        {invoice.status}
+                      </Badge>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => generatePDF(invoice)}
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        Download PDF
+                      </Button>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </CardContent>

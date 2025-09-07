@@ -137,7 +137,7 @@ const CreateInvoice = () => {
       if (error) throw error;
 
       toast.success("Invoice created successfully!");
-      navigate("/");
+      navigate("/dashboard");
     } catch (error) {
       console.error("Error creating invoice:", error);
       toast.error("Failed to create invoice");
