@@ -212,5 +212,8 @@ export const generateInvoicePDF = (invoice: InvoiceData) => {
   doc.setLineWidth(1);
   doc.rect(10, 10, pageWidth - 20, pageHeight - 20);
   
+  // Actually download the PDF
+  doc.save(`Invoice-${invoice.invoice_number}.pdf`);
+  
   return doc;
 };
