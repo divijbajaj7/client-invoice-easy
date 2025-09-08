@@ -47,15 +47,15 @@ export const generateInvoicePDF = (invoice: InvoiceData) => {
   const pageHeight = doc.internal.pageSize.getHeight();
   const margin = 20;
   
-  // Company details (fixed for Thinklytics AI)
+  // Company details (use dynamic data from invoice or fallback to defaults)
   const companyDetails = {
-    name: "THINKLYTICS AI CONSULTING LLP",
-    address: "B-12 East Baldev park, Krishna Nagar, Delhi-110051",
-    bankName: "IDFC FIRST BANK",
-    accountNumber: "79999858727",
-    ifsc: "IDFB0020138",
-    branch: "Mayur Vihar",
-    pan: "AAYFT2120L"
+    name: invoice.companies?.name || "THINKLYTICS AI CONSULTING LLP",
+    address: invoice.companies?.address || "B-12 East Baldev park, Krishna Nagar, Delhi-110051",
+    bankName: invoice.companies?.bank_name || "IDFC FIRST BANK",
+    accountNumber: invoice.companies?.account_number || "79999858727",
+    ifsc: invoice.companies?.ifsc_code || "IDFB0020138",
+    branch: invoice.companies?.branch || "Mayur Vihar",
+    pan: invoice.companies?.pan_number || "AAYFT2120L"
   };
   
   // Header - Invoice title
