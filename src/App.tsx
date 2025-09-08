@@ -11,6 +11,7 @@ import NotFound from "./pages/NotFound";
 import CreateInvoice from "./pages/CreateInvoice";
 import ManageClients from "./pages/ManageClients";
 import CompanyProfile from "./pages/CompanyProfile";
+import ViewInvoice from "./pages/ViewInvoice";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -54,6 +55,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <CompanyProfile />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/view-invoice/:id" 
+              element={
+                <ProtectedRoute>
+                  <ViewInvoice />
                 </ProtectedRoute>
               } 
             />
