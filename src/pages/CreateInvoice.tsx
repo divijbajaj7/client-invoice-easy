@@ -122,11 +122,14 @@ const CreateInvoice = () => {
     }
   };
 
-  // Set auto-incremented invoice number when component mounts
+  // Set auto-incremented invoice number when component mounts (only if field is empty)
   useEffect(() => {
     const setInvoiceNumber = async () => {
-      const nextNumber = await getNextInvoiceNumber();
-      form.setValue('invoiceNumber', nextNumber);
+      const currentValue = form.getValues('invoiceNumber');
+      if (!currentValue) {
+        const nextNumber = await getNextInvoiceNumber();
+        form.setValue('invoiceNumber', nextNumber);
+      }
     };
     
     if (user) {
