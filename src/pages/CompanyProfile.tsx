@@ -121,17 +121,18 @@ const CompanyProfile = () => {
 
     try {
       const fileExt = logoFile.name.split('.').pop();
-      const fileName = `${user.id}_${Date.now()}.${fileExt}`;
+      const fileName = `logo_${Date.now()}.${fileExt}`;
+      const filePath = `${user.id}/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from('company-logos')
-        .upload(fileName, logoFile);
+        .upload(filePath, logoFile);
 
       if (uploadError) throw uploadError;
 
       const { data } = supabase.storage
         .from('company-logos')
-        .getPublicUrl(fileName);
+        .getPublicUrl(filePath);
 
       return data.publicUrl;
     } catch (error) {
