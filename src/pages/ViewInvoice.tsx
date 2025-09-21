@@ -26,6 +26,11 @@ interface Invoice {
     phone: string | null;
     email: string | null;
     gst_number: string | null;
+    bank_name: string | null;
+    account_number: string | null;
+    ifsc_code: string | null;
+    branch: string | null;
+    pan_number: string | null;
   };
   clients: {
     name: string;
@@ -53,7 +58,7 @@ const ViewInvoice = () => {
           .from("invoices")
           .select(`
             *,
-            companies (name, address, phone, email, gst_number),
+            companies (name, address, phone, email, gst_number, bank_name, account_number, ifsc_code, branch, pan_number),
             clients (name, company_name, address, phone, email, gst_number)
           `)
           .eq("id", id)
@@ -217,6 +222,37 @@ const ViewInvoice = () => {
                 <div className="flex justify-between font-bold text-lg border-t pt-2">
                   <span>Total:</span>
                   <span>₹{parseFloat(invoice.total_amount.toString()).toLocaleString('en-IN')}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Banking Details */}
+            <div>
+              <h3 className="font-semibold text-lg mb-2">Banking Details:</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-muted p-4 rounded-lg">
+                <div>
+                  <p className="text-sm text-muted-foreground">Bank Name</p>
+                  <p className="font-medium">{invoice.companies.bank_name || "IDFC FIRST BANK"}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Account Name</p>
+                  <p className="font-medium">{invoice.companies.name}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Account Number</p>
+                  <p className="font-medium">{invoice.companies.account_number || "79999858727"}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">IFSC Code</p>
+                  <p className="font-medium">{invoice.companies.ifsc_code || "IDFB0020138"}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Branch</p>
+                  <p className="font-medium">{invoice.companies.branch || "Mayur Vihar"}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">PAN Number</p>
+                  <p className="font-medium">{invoice.companies.pan_number || "AAYFT2120L"}</p>
                 </div>
               </div>
             </div>
