@@ -106,6 +106,34 @@ const CreateInvoice = () => {
     return { subtotal, gstAmount, total };
   };
 
+  const getNextInvoiceNumber = async () => {
+    if (!user) return "1";
+    
+    try {
+      const { data, error } = await supabase.rpc('get_next_invoice_number', {
+        user_uuid: user.id
+      });
+      
+      if (error) throw error;
+      return data || "1";
+    } catch (error) {
+      console.error('Error getting next invoice number:', error);
+      return "1";
+    }
+  };
+
+  // Set auto-incremented invoice number when component mounts
+  useEffect(() => {
+    const setInvoiceNumber = async () => {
+      const nextNumber = await getNextInvoiceNumber();
+      form.setValue('invoiceNumber', nextNumber);
+    };
+    
+    if (user) {
+      setInvoiceNumber();
+    }
+  }, [user, form]);
+
   const onSubmit = async (values: z.infer<typeof invoiceSchema>) => {
     if (!user) return;
     if (items.length === 0) {

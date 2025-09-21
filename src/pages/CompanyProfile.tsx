@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Building2, Save } from "lucide-react";
+import { ArrowLeft, Building2, Save, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -26,7 +26,10 @@ const CompanyProfile = () => {
     account_number: "",
     ifsc_code: "",
     branch: "",
+    logo_url: "",
   });
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
 
   useEffect(() => {
     fetchCompanyData();
@@ -59,7 +62,12 @@ const CompanyProfile = () => {
           account_number: (data as any).account_number || "",
           ifsc_code: (data as any).ifsc_code || "",
           branch: (data as any).branch || "",
+          logo_url: data.logo_url || "",
         });
+        
+        if (data.logo_url) {
+          setLogoPreview(data.logo_url);
+        }
       }
     } catch (error) {
       console.error("Error:", error);
@@ -73,28 +81,96 @@ const CompanyProfile = () => {
     }));
   };
 
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file type
+      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+      if (!validTypes.includes(file.type)) {
+        toast({
+          title: "Error",
+          description: "Please upload a valid image file (JPG, PNG, GIF, WEBP)",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "Error",
+          description: "File size must be less than 5MB",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setLogoFile(file);
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setLogoPreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const uploadLogo = async (): Promise<string | null> => {
+    if (!logoFile || !user) return null;
+
+    try {
+      const fileExt = logoFile.name.split('.').pop();
+      const fileName = `${user.id}_${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('company-logos')
+        .upload(fileName, logoFile);
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage
+        .from('company-logos')
+        .getPublicUrl(fileName);
+
+      return data.publicUrl;
+    } catch (error) {
+      console.error('Error uploading logo:', error);
+      throw error;
+    }
+  };
+
   const handleSave = async () => {
     if (!user) return;
 
     setLoading(true);
     try {
+      let logoUrl = companyData.logo_url;
+
+      // Upload new logo if one was selected
+      if (logoFile) {
+        logoUrl = await uploadLogo();
+      }
+
+      const updatedData = { ...companyData, logo_url: logoUrl };
+
       const { data: existingCompany } = await supabase
         .from("companies")
         .select("id")
         .eq("user_id", user.id)
-        .single();
+        .maybeSingle();
 
       if (existingCompany) {
         const { error } = await supabase
           .from("companies")
-          .update(companyData)
+          .update(updatedData)
           .eq("user_id", user.id);
 
         if (error) throw error;
       } else {
         const { error } = await supabase
           .from("companies")
-          .insert([{ ...companyData, user_id: user.id }]);
+          .insert([{ ...updatedData, user_id: user.id }]);
 
         if (error) throw error;
       }
@@ -161,6 +237,33 @@ const CompanyProfile = () => {
                   placeholder="company@example.com"
                 />
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="logo">Company Logo</Label>
+              <div className="flex items-center space-x-4">
+                <div className="flex-1">
+                  <Input
+                    id="logo"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleLogoChange}
+                    className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
+                  />
+                </div>
+                {logoPreview && (
+                  <div className="w-16 h-16 border rounded-lg overflow-hidden">
+                    <img
+                      src={logoPreview}
+                      alt="Logo preview"
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                )}
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Upload JPG, PNG, GIF, or WEBP (max 5MB)
+              </p>
             </div>
 
             <div className="space-y-2">
