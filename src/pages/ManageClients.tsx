@@ -30,6 +30,7 @@ interface Client {
   phone?: string;
   address?: string;
   gst_number?: string;
+  pan_number?: string;
 }
 
 interface ClientFormData {
@@ -39,6 +40,7 @@ interface ClientFormData {
   phone: string;
   address: string;
   gst_number: string;
+  pan_number: string;
 }
 
 const ManageClients = () => {
@@ -57,7 +59,8 @@ const ManageClients = () => {
       email: "",
       phone: "",
       address: "",
-      gst_number: ""
+      gst_number: "",
+      pan_number: ""
     }
   });
 
@@ -143,7 +146,8 @@ const ManageClients = () => {
       email: client.email || "",
       phone: client.phone || "",
       address: client.address || "",
-      gst_number: client.gst_number || ""
+      gst_number: client.gst_number || "",
+      pan_number: client.pan_number || ""
     });
     setShowForm(true);
   };
@@ -290,6 +294,20 @@ const ManageClients = () => {
                         </FormItem>
                       )}
                     />
+
+                    <FormField
+                      control={form.control}
+                      name="pan_number"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>PAN Number</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Enter PAN number" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
 
                   <FormField
@@ -371,6 +389,12 @@ const ManageClients = () => {
                             <div className="flex items-center text-muted-foreground">
                               <FileText className="h-4 w-4 mr-2" />
                               GST: {client.gst_number}
+                            </div>
+                          )}
+                          {client.pan_number && (
+                            <div className="flex items-center text-muted-foreground">
+                              <FileText className="h-4 w-4 mr-2" />
+                              PAN: {client.pan_number}
                             </div>
                           )}
                           {client.address && (

@@ -23,6 +23,7 @@ export type Database = {
           gst_number: string | null
           id: string
           name: string
+          pan_number: string | null
           phone: string | null
           updated_at: string
           user_id: string
@@ -35,6 +36,7 @@ export type Database = {
           gst_number?: string | null
           id?: string
           name: string
+          pan_number?: string | null
           phone?: string | null
           updated_at?: string
           user_id: string
@@ -47,6 +49,7 @@ export type Database = {
           gst_number?: string | null
           id?: string
           name?: string
+          pan_number?: string | null
           phone?: string | null
           updated_at?: string
           user_id?: string
