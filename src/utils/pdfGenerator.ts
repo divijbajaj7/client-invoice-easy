@@ -233,7 +233,7 @@ export const generateInvoicePDF = (invoice: InvoiceData) => {
       doc.text(descLines[0], descriptionX, yPos + 10);
       
       // Quantity, Rate, Amount
-      doc.text(item.quantity.toString(), quantityX + 5, yPos + 10);
+      doc.text(item.quantity.toString(), quantityX + 15, yPos + 10);
       doc.text(`Rs${item.rate.toLocaleString('en-IN')}`, rateX + 5, yPos + 10);
       doc.text(`Rs${item.amount.toLocaleString('en-IN')}`, amountX + 5, yPos + 10);
       
@@ -270,7 +270,7 @@ export const generateInvoicePDF = (invoice: InvoiceData) => {
   
   yPos += 25;
   
-  // Banking Details
+  // Banking Details - exactly matching the view layout
   doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(0, 0, 0);
@@ -278,52 +278,60 @@ export const generateInvoicePDF = (invoice: InvoiceData) => {
   
   yPos += 15;
   
-  // Banking details in a clean grid with proper spacing
-  doc.setFillColor(245, 245, 245);
-  const bankingBoxHeight = 60;
-  const bankingTableWidth = pageWidth - 2 * margin;
-  doc.rect(margin, yPos, bankingTableWidth, bankingBoxHeight, 'F');
+  // Create exact 2x3 grid structure like in the view
+  const bankingStartY = yPos;
+  const rowHeight = 25;
+  const leftColWidth = 90;
+  const rightColX = leftColumnX + leftColWidth + 40;
   
-  doc.setFontSize(10);
+  // Background rectangle
+  doc.setFillColor(245, 245, 245);
+  doc.rect(leftColumnX, bankingStartY, pageWidth - 2 * margin, rowHeight * 3, 'F');
+  
+  // Row 1: Bank Name | Account Name
+  doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(128, 128, 128);
+  doc.text('Bank Name', leftColumnX + 10, bankingStartY + 10);
+  doc.text('Account Name', rightColX, bankingStartY + 10);
   
-  // Calculate proper spacing for banking details
-  const bankingLabelX = margin + 10;
-  const bankingValueX = margin + 90;
-  const bankingRightLabelX = pageWidth / 2 + 10;
-  const bankingRightValueX = pageWidth / 2 + 90;
-  const maxBankingValueWidth = (pageWidth / 2) - 100;
-  
-  // Left column
-  doc.text('Bank Name', bankingLabelX, yPos + 15);
-  doc.text('Account Number', bankingLabelX, yPos + 30);
-  doc.text('Branch', bankingLabelX, yPos + 45);
-  
-  // Right column
-  doc.text('Account Name', bankingRightLabelX, yPos + 15);
-  doc.text('IFSC Code', bankingRightLabelX, yPos + 30);
-  doc.text('PAN Number', bankingRightLabelX, yPos + 45);
-  
-  // Values with proper text wrapping
-  doc.setTextColor(0, 0, 0);
+  doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
+  doc.setTextColor(0, 0, 0);
+  doc.text(companyDetails.bankName, leftColumnX + 10, bankingStartY + 20);
+  doc.text(companyDetails.name, rightColX, bankingStartY + 20);
   
-  // Left column values
-  doc.text(companyDetails.bankName, bankingValueX, yPos + 15);
-  doc.text(companyDetails.accountNumber, bankingValueX, yPos + 30);
-  doc.text(companyDetails.branch, bankingValueX, yPos + 45);
+  // Row 2: Account Number | IFSC Code
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(128, 128, 128);
+  doc.text('Account Number', leftColumnX + 10, bankingStartY + rowHeight + 10);
+  doc.text('IFSC Code', rightColX, bankingStartY + rowHeight + 10);
   
-  // Right column values with text wrapping for long company names
-  const accountNameLines = doc.splitTextToSize(companyDetails.name, maxBankingValueWidth);
-  doc.text(accountNameLines[0], bankingRightValueX, yPos + 15);
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(0, 0, 0);
+  doc.text(companyDetails.accountNumber, leftColumnX + 10, bankingStartY + rowHeight + 20);
+  doc.text(companyDetails.ifsc, rightColX, bankingStartY + rowHeight + 20);
   
-  doc.text(companyDetails.ifsc, bankingRightValueX, yPos + 30);
-  doc.text(companyDetails.pan, bankingRightValueX, yPos + 45);
+  // Row 3: Branch | PAN Number
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(128, 128, 128);
+  doc.text('Branch', leftColumnX + 10, bankingStartY + (rowHeight * 2) + 10);
+  doc.text('PAN Number', rightColX, bankingStartY + (rowHeight * 2) + 10);
+  
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(0, 0, 0);
+  doc.text(companyDetails.branch, leftColumnX + 10, bankingStartY + (rowHeight * 2) + 20);
+  doc.text(companyDetails.pan, rightColX, bankingStartY + (rowHeight * 2) + 20);
+  
+  yPos = bankingStartY + (rowHeight * 3) + 10;
   
   // Notes if any
   if (invoice.notes) {
-    yPos += bankingBoxHeight + 20;
+    yPos += 10;
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(0, 0, 0);
