@@ -91,67 +91,78 @@ export const generateInvoicePDF = (invoice: InvoiceData) => {
   
   yPos += 10;
   
-  // From section (Company details)
+  // From section (Company details) - left side
+  const leftColumnX = margin;
+  const rightColumnX = pageWidth / 2 + 10;
+  const maxColumnWidth = (pageWidth / 2) - 30;
+  
   doc.setFontSize(11);
   doc.setFont('helvetica', 'bold');
-  doc.text(companyDetails.name, margin, yPos);
+  doc.text(companyDetails.name, leftColumnX, yPos);
   
   yPos += 8;
   doc.setFont('helvetica', 'normal');
   
-  // Split company address into lines
-  const fromAddressLines = doc.splitTextToSize(companyDetails.address, 80);
+  // Split company address into lines with proper width
+  const fromAddressLines = doc.splitTextToSize(companyDetails.address, maxColumnWidth);
   fromAddressLines.forEach((line: string) => {
-    doc.text(line, margin, yPos);
+    doc.text(line, leftColumnX, yPos);
     yPos += 6;
   });
   
   if (companyDetails.phone) {
-    doc.text(`Phone: ${companyDetails.phone}`, margin, yPos);
+    doc.text(`Phone: ${companyDetails.phone}`, leftColumnX, yPos);
     yPos += 6;
   }
   
   if (companyDetails.email) {
-    doc.text(`Email: ${companyDetails.email}`, margin, yPos);
+    const emailLines = doc.splitTextToSize(`Email: ${companyDetails.email}`, maxColumnWidth);
+    emailLines.forEach((line: string) => {
+      doc.text(line, leftColumnX, yPos);
+      yPos += 6;
+    });
   }
   
-  // To section (Client details)
+  // To section (Client details) - right side
   let clientYPos = 85;
   doc.setFontSize(11);
   doc.setFont('helvetica', 'bold');
   
   if (invoice.clients) {
     const clientName = invoice.clients.name;
-    doc.text(clientName, pageWidth / 2 + 10, clientYPos);
+    doc.text(clientName, rightColumnX, clientYPos);
     
     clientYPos += 8;
     doc.setFont('helvetica', 'normal');
     
     if (invoice.clients.company_name) {
-      doc.text(invoice.clients.company_name, pageWidth / 2 + 10, clientYPos);
+      doc.text(invoice.clients.company_name, rightColumnX, clientYPos);
       clientYPos += 6;
     }
     
     if (invoice.clients.address) {
-      const toAddressLines = doc.splitTextToSize(invoice.clients.address, 80);
+      const toAddressLines = doc.splitTextToSize(invoice.clients.address, maxColumnWidth);
       toAddressLines.forEach((line: string) => {
-        doc.text(line, pageWidth / 2 + 10, clientYPos);
+        doc.text(line, rightColumnX, clientYPos);
         clientYPos += 6;
       });
     }
     
     if (invoice.clients.phone) {
-      doc.text(`Phone: ${invoice.clients.phone}`, pageWidth / 2 + 10, clientYPos);
+      doc.text(`Phone: ${invoice.clients.phone}`, rightColumnX, clientYPos);
       clientYPos += 6;
     }
     
     if (invoice.clients.email) {
-      doc.text(`Email: ${invoice.clients.email}`, pageWidth / 2 + 10, clientYPos);
-      clientYPos += 6;
+      const emailLines = doc.splitTextToSize(`Email: ${invoice.clients.email}`, maxColumnWidth);
+      emailLines.forEach((line: string) => {
+        doc.text(line, rightColumnX, clientYPos);
+        clientYPos += 6;
+      });
     }
     
     if (invoice.clients.gst_number) {
-      doc.text(`GST: ${invoice.clients.gst_number}`, pageWidth / 2 + 10, clientYPos);
+      doc.text(`GST: ${invoice.clients.gst_number}`, rightColumnX, clientYPos);
     }
   }
   
@@ -160,17 +171,28 @@ export const generateInvoicePDF = (invoice: InvoiceData) => {
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(128, 128, 128);
-  doc.text('Invoice Date', margin, yPos);
+  doc.text('Invoice Date', leftColumnX, yPos);
   
   doc.setTextColor(0, 0, 0);
   doc.setFont('helvetica', 'bold');
-  doc.text(new Date(invoice.invoice_date).toLocaleDateString('en-GB'), margin, yPos + 8);
+  doc.text(new Date(invoice.invoice_date).toLocaleDateString('en-GB'), leftColumnX, yPos + 8);
   
   yPos += 25;
   
-  // Items table
+  // Items table with proper column widths
   const tableStartY = yPos;
   const tableWidth = pageWidth - 2 * margin;
+  
+  // Column widths for proper alignment
+  const descriptionWidth = tableWidth * 0.5;  // 50% for description
+  const quantityWidth = tableWidth * 0.15;    // 15% for quantity  
+  const rateWidth = tableWidth * 0.175;       // 17.5% for rate
+  const amountWidth = tableWidth * 0.175;     // 17.5% for amount
+  
+  const descriptionX = margin + 5;
+  const quantityX = margin + descriptionWidth;
+  const rateX = quantityX + quantityWidth;
+  const amountX = rateX + rateWidth;
   
   // Table header
   doc.setFillColor(245, 245, 245);
@@ -179,10 +201,10 @@ export const generateInvoicePDF = (invoice: InvoiceData) => {
   doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(0, 0, 0);
-  doc.text('Description', margin + 5, yPos + 8);
-  doc.text('Quantity', pageWidth - 120, yPos + 8);
-  doc.text('Rate', pageWidth - 80, yPos + 8);
-  doc.text('Amount', pageWidth - 40, yPos + 8);
+  doc.text('Description', descriptionX, yPos + 8);
+  doc.text('Quantity', quantityX + 5, yPos + 8);
+  doc.text('Rate', rateX + 5, yPos + 8);
+  doc.text('Amount', amountX + 5, yPos + 8);
   
   yPos += 12;
   
@@ -206,14 +228,14 @@ export const generateInvoicePDF = (invoice: InvoiceData) => {
       
       doc.setTextColor(0, 0, 0);
       
-      // Description
-      const descLines = doc.splitTextToSize(item.description, 100);
-      doc.text(descLines[0], margin + 5, yPos + 10);
+      // Description with proper width
+      const descLines = doc.splitTextToSize(item.description, descriptionWidth - 10);
+      doc.text(descLines[0], descriptionX, yPos + 10);
       
-      // Quantity, Rate, Amount (right aligned)
-      doc.text(item.quantity.toString(), pageWidth - 115, yPos + 10);
-      doc.text(`₹${item.rate.toLocaleString('en-IN')}`, pageWidth - 75, yPos + 10);
-      doc.text(`₹${item.amount.toLocaleString('en-IN')}`, pageWidth - 35, yPos + 10);
+      // Quantity, Rate, Amount
+      doc.text(item.quantity.toString(), quantityX + 5, yPos + 10);
+      doc.text(`Rs${item.rate.toLocaleString('en-IN')}`, rateX + 5, yPos + 10);
+      doc.text(`Rs${item.amount.toLocaleString('en-IN')}`, amountX + 5, yPos + 10);
       
       yPos += rowHeight;
     });
@@ -221,28 +243,30 @@ export const generateInvoicePDF = (invoice: InvoiceData) => {
   
   yPos += 15;
   
-  // Totals section (right aligned)
-  const totalsX = pageWidth - 120;
+  // Totals section (right aligned with proper spacing)
+  const totalsStartX = pageWidth - 80;
+  const totalsValueX = pageWidth - 20;
+  
   doc.setFontSize(11);
   doc.setFont('helvetica', 'normal');
   
   // Subtotal
-  doc.text('Subtotal:', totalsX, yPos);
-  doc.text(`₹${invoice.subtotal.toLocaleString('en-IN')}`, pageWidth - 20, yPos);
+  doc.text('Subtotal:', totalsStartX, yPos);
+  doc.text(`Rs${invoice.subtotal.toLocaleString('en-IN')}`, totalsValueX, yPos, { align: 'right' });
   
   // Only show GST if there's a GST amount
   if (invoice.gst_amount > 0) {
     yPos += 10;
-    doc.text('GST:', totalsX, yPos);
-    doc.text(`₹${invoice.gst_amount.toLocaleString('en-IN')}`, pageWidth - 20, yPos);
+    doc.text('GST:', totalsStartX, yPos);
+    doc.text(`Rs${invoice.gst_amount.toLocaleString('en-IN')}`, totalsValueX, yPos, { align: 'right' });
   }
   
   // Total
   yPos += 15;
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(14);
-  doc.text('Total:', totalsX, yPos);
-  doc.text(`₹${invoice.total_amount.toLocaleString('en-IN')}`, pageWidth - 20, yPos);
+  doc.text('Total:', totalsStartX, yPos);
+  doc.text(`Rs${invoice.total_amount.toLocaleString('en-IN')}`, totalsValueX, yPos, { align: 'right' });
   
   yPos += 25;
   
@@ -250,44 +274,52 @@ export const generateInvoicePDF = (invoice: InvoiceData) => {
   doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(0, 0, 0);
-  doc.text('Banking Details:', margin, yPos);
+  doc.text('Banking Details:', leftColumnX, yPos);
   
   yPos += 15;
   
-  // Banking details in a clean grid
+  // Banking details in a clean grid with proper spacing
   doc.setFillColor(245, 245, 245);
-  const bankingBoxHeight = 50;
-  doc.rect(margin, yPos, tableWidth, bankingBoxHeight, 'F');
+  const bankingBoxHeight = 60;
+  const bankingTableWidth = pageWidth - 2 * margin;
+  doc.rect(margin, yPos, bankingTableWidth, bankingBoxHeight, 'F');
   
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(128, 128, 128);
   
-  // Left column labels
-  const labelX = margin + 10;
-  const valueX = margin + 80;
-  const rightLabelX = pageWidth / 2 + 20;
-  const rightValueX = pageWidth / 2 + 90;
+  // Calculate proper spacing for banking details
+  const bankingLabelX = margin + 10;
+  const bankingValueX = margin + 90;
+  const bankingRightLabelX = pageWidth / 2 + 10;
+  const bankingRightValueX = pageWidth / 2 + 90;
+  const maxBankingValueWidth = (pageWidth / 2) - 100;
   
-  doc.text('Bank Name', labelX, yPos + 12);
-  doc.text('Account Number', labelX, yPos + 25);
-  doc.text('Branch', labelX, yPos + 38);
+  // Left column
+  doc.text('Bank Name', bankingLabelX, yPos + 15);
+  doc.text('Account Number', bankingLabelX, yPos + 30);
+  doc.text('Branch', bankingLabelX, yPos + 45);
   
-  doc.text('Account Name', rightLabelX, yPos + 12);
-  doc.text('IFSC Code', rightLabelX, yPos + 25);
-  doc.text('PAN Number', rightLabelX, yPos + 38);
+  // Right column
+  doc.text('Account Name', bankingRightLabelX, yPos + 15);
+  doc.text('IFSC Code', bankingRightLabelX, yPos + 30);
+  doc.text('PAN Number', bankingRightLabelX, yPos + 45);
   
-  // Values
+  // Values with proper text wrapping
   doc.setTextColor(0, 0, 0);
   doc.setFont('helvetica', 'bold');
   
-  doc.text(companyDetails.bankName, valueX, yPos + 12);
-  doc.text(companyDetails.accountNumber, valueX, yPos + 25);
-  doc.text(companyDetails.branch, valueX, yPos + 38);
+  // Left column values
+  doc.text(companyDetails.bankName, bankingValueX, yPos + 15);
+  doc.text(companyDetails.accountNumber, bankingValueX, yPos + 30);
+  doc.text(companyDetails.branch, bankingValueX, yPos + 45);
   
-  doc.text(companyDetails.name, rightValueX, yPos + 12);
-  doc.text(companyDetails.ifsc, rightValueX, yPos + 25);
-  doc.text(companyDetails.pan, rightValueX, yPos + 38);
+  // Right column values with text wrapping for long company names
+  const accountNameLines = doc.splitTextToSize(companyDetails.name, maxBankingValueWidth);
+  doc.text(accountNameLines[0], bankingRightValueX, yPos + 15);
+  
+  doc.text(companyDetails.ifsc, bankingRightValueX, yPos + 30);
+  doc.text(companyDetails.pan, bankingRightValueX, yPos + 45);
   
   // Notes if any
   if (invoice.notes) {
@@ -295,14 +327,14 @@ export const generateInvoicePDF = (invoice: InvoiceData) => {
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(0, 0, 0);
-    doc.text('Notes:', margin, yPos);
+    doc.text('Notes:', leftColumnX, yPos);
     
     yPos += 10;
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(64, 64, 64);
     const noteLines = doc.splitTextToSize(invoice.notes, pageWidth - 2 * margin);
     noteLines.forEach((line: string) => {
-      doc.text(line, margin, yPos);
+      doc.text(line, leftColumnX, yPos);
       yPos += 6;
     });
   }
