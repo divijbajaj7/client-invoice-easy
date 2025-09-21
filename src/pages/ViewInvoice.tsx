@@ -165,7 +165,7 @@ const ViewInvoice = () => {
             </div>
 
             {/* Invoice Details */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <p className="text-sm text-muted-foreground">Invoice Date</p>
                 <p className="font-medium">{new Date(invoice.invoice_date).toLocaleDateString()}</p>
@@ -176,10 +176,6 @@ const ViewInvoice = () => {
                   <p className="font-medium">{new Date(invoice.due_date).toLocaleDateString()}</p>
                 </div>
               )}
-              <div>
-                <p className="text-sm text-muted-foreground">Status</p>
-                <p className="font-medium capitalize">{invoice.status}</p>
-              </div>
             </div>
 
             {/* Items Table */}

@@ -61,14 +61,23 @@ export const generateInvoicePDF = (invoice: InvoiceData) => {
     email: invoice.companies?.email || ""
   };
   
-  // Header with cyan color for company name and "Tax Invoice"
+  // Header with cyan color for company name and invoice title
   doc.setFillColor(96, 203, 204); // Cyan color
   doc.setTextColor(96, 203, 204);
   doc.setFontSize(16);
   doc.setFont('helvetica', 'bold');
   doc.text(companyDetails.name, margin, 30);
   
-  doc.text('Tax Invoice', pageWidth - margin - 50, 30);
+  // Center the INVOICE title and show invoice number
+  doc.setFontSize(24);
+  const invoiceTitle = 'INVOICE';
+  const titleWidth = doc.getTextWidth(invoiceTitle);
+  doc.text(invoiceTitle, (pageWidth - titleWidth) / 2, 30);
+  
+  doc.setFontSize(14);
+  const invoiceNumberText = `Invoice #${invoice.invoice_number}`;
+  const numberWidth = doc.getTextWidth(invoiceNumberText);
+  doc.text(invoiceNumberText, (pageWidth - numberWidth) / 2, 45);
   
   // Company address
   doc.setTextColor(0, 0, 0);
