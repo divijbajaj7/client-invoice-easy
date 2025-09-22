@@ -270,6 +270,13 @@ export const generateInvoicePDF = (invoice: InvoiceData) => {
   
   yPos += 25;
   
+  // Check if we need a new page for banking details
+  const bankingHeight = 90; // Estimated height for banking section
+  if (yPos + bankingHeight > pageHeight - margin) {
+    doc.addPage();
+    yPos = 40;
+  }
+  
   // Banking Details - exactly matching the view layout
   doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
