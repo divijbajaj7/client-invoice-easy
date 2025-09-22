@@ -214,7 +214,10 @@ export const generateInvoicePDF = (invoice: InvoiceData) => {
   
   if (invoice.items && Array.isArray(invoice.items)) {
     invoice.items.forEach((item, index) => {
-      const rowHeight = 15;
+      // Description with proper width - split into lines first
+      const descLines = doc.splitTextToSize(item.description, descriptionWidth - 10);
+      const lineCount = Math.min(descLines.length, 2); // Maximum 2 lines
+      const rowHeight = lineCount > 1 ? 25 : 15; // Taller row for multiple lines
       
       // Row background
       if (index % 2 === 0) {
@@ -228,14 +231,16 @@ export const generateInvoicePDF = (invoice: InvoiceData) => {
       
       doc.setTextColor(0, 0, 0);
       
-      // Description with proper width
-      const descLines = doc.splitTextToSize(item.description, descriptionWidth - 10);
-      doc.text(descLines[0], descriptionX, yPos + 10);
+      // Description - print up to 2 lines
+      descLines.slice(0, 2).forEach((line, lineIndex) => {
+        doc.text(line, descriptionX, yPos + 8 + (lineIndex * 6));
+      });
       
-      // Quantity, Rate, Amount
-      doc.text(item.quantity.toString(), quantityX + 15, yPos + 10);
-      doc.text(`Rs${item.rate.toLocaleString('en-IN')}`, rateX + 5, yPos + 10);
-      doc.text(`Rs${item.amount.toLocaleString('en-IN')}`, amountX + 5, yPos + 10);
+      // Quantity, Rate, Amount - center them vertically in the row
+      const verticalCenter = yPos + (rowHeight / 2) + 2;
+      doc.text(item.quantity.toString(), quantityX + 15, verticalCenter);
+      doc.text(`Rs${item.rate.toLocaleString('en-IN')}`, rateX + 5, verticalCenter);
+      doc.text(`Rs${item.amount.toLocaleString('en-IN')}`, amountX + 5, verticalCenter);
       
       yPos += rowHeight;
     });
