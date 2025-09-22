@@ -285,54 +285,62 @@ export const generateInvoicePDF = (invoice: InvoiceData) => {
   
   yPos += 15;
   
-  // Create exact 2x3 grid structure like in the view
+  // Create exact 2x3 grid structure like in the view with better spacing
   const bankingStartY = yPos;
-  const rowHeight = 25;
-  const leftColWidth = 90;
-  const rightColX = leftColumnX + leftColWidth + 40;
+  const rowHeight = 22; // Reduced height
+  const leftColWidth = 85; // Reduced width
+  const rightColX = leftColumnX + leftColWidth + 25; // Reduced gap
+  const maxTextWidth = 80; // Maximum width for text wrapping
   
   // Background rectangle
   doc.setFillColor(245, 245, 245);
   doc.rect(leftColumnX, bankingStartY, pageWidth - 2 * margin, rowHeight * 3, 'F');
   
-  // Row 1: Bank Name | Account Name
+  // Row 1: Bank Name | Account Name  
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(128, 128, 128);
-  doc.text('Bank Name', leftColumnX + 10, bankingStartY + 10);
-  doc.text('Account Name', rightColX, bankingStartY + 10);
+  doc.text('Bank Name', leftColumnX + 5, bankingStartY + 8);
+  doc.text('Account Name', rightColX, bankingStartY + 8);
   
-  doc.setFontSize(10);
+  doc.setFontSize(9); // Reduced font size
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(0, 0, 0);
-  doc.text(companyDetails.bankName, leftColumnX + 10, bankingStartY + 20);
-  doc.text(companyDetails.name, rightColX, bankingStartY + 20);
+  doc.text(companyDetails.bankName, leftColumnX + 5, bankingStartY + 16);
+  
+  // Split long account name into multiple lines if needed
+  const accountNameLines = doc.splitTextToSize(companyDetails.name, maxTextWidth);
+  let accountNameY = bankingStartY + 16;
+  accountNameLines.forEach((line: string, index: number) => {
+    doc.text(line, rightColX, accountNameY);
+    if (index === 0) accountNameY += 8; // Only add spacing after first line
+  });
   
   // Row 2: Account Number | IFSC Code
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(128, 128, 128);
-  doc.text('Account Number', leftColumnX + 10, bankingStartY + rowHeight + 10);
-  doc.text('IFSC Code', rightColX, bankingStartY + rowHeight + 10);
+  doc.text('Account Number', leftColumnX + 5, bankingStartY + rowHeight + 8);
+  doc.text('IFSC Code', rightColX, bankingStartY + rowHeight + 8);
   
-  doc.setFontSize(10);
+  doc.setFontSize(9);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(0, 0, 0);
-  doc.text(companyDetails.accountNumber, leftColumnX + 10, bankingStartY + rowHeight + 20);
-  doc.text(companyDetails.ifsc, rightColX, bankingStartY + rowHeight + 20);
+  doc.text(companyDetails.accountNumber, leftColumnX + 5, bankingStartY + rowHeight + 16);
+  doc.text(companyDetails.ifsc, rightColX, bankingStartY + rowHeight + 16);
   
   // Row 3: Branch | PAN Number
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(128, 128, 128);
-  doc.text('Branch', leftColumnX + 10, bankingStartY + (rowHeight * 2) + 10);
-  doc.text('PAN Number', rightColX, bankingStartY + (rowHeight * 2) + 10);
+  doc.text('Branch', leftColumnX + 5, bankingStartY + (rowHeight * 2) + 8);
+  doc.text('PAN Number', rightColX, bankingStartY + (rowHeight * 2) + 8);
   
-  doc.setFontSize(10);
+  doc.setFontSize(9);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(0, 0, 0);
-  doc.text(companyDetails.branch, leftColumnX + 10, bankingStartY + (rowHeight * 2) + 20);
-  doc.text(companyDetails.pan, rightColX, bankingStartY + (rowHeight * 2) + 20);
+  doc.text(companyDetails.branch, leftColumnX + 5, bankingStartY + (rowHeight * 2) + 16);
+  doc.text(companyDetails.pan, rightColX, bankingStartY + (rowHeight * 2) + 16);
   
   yPos = bankingStartY + (rowHeight * 3) + 10;
   
@@ -353,6 +361,15 @@ export const generateInvoicePDF = (invoice: InvoiceData) => {
       yPos += 6;
     });
   }
+  
+  // Electronic signature disclaimer
+  yPos += 15;
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'italic');
+  doc.setTextColor(128, 128, 128);
+  const disclaimerText = "This invoice is electronically generated and does not require a physical signature.";
+  const disclaimerWidth = doc.getTextWidth(disclaimerText);
+  doc.text(disclaimerText, (pageWidth - disclaimerWidth) / 2, yPos);
   
   // Download the PDF
   doc.save(`Invoice-${invoice.invoice_number}.pdf`);
