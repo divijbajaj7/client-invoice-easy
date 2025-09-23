@@ -260,13 +260,13 @@ const Dashboard = () => {
             </CardContent>
           </Card>
 
-          <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate("/company-profile")}>
+          <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate("/manage-companies")}>
             <CardContent className="p-6 text-center">
               <div className="bg-orange-100 p-3 rounded-full w-fit mx-auto mb-4">
                 <Building2 className="h-8 w-8 text-orange-600" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">Company Profile</h3>
-              <p className="text-gray-600 text-sm">Set up your business details and bank info</p>
+              <h3 className="text-lg font-semibold mb-2">Manage Companies</h3>
+              <p className="text-gray-600 text-sm">Add and manage multiple company profiles</p>
             </CardContent>
           </Card>
         </div>

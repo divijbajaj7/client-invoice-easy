@@ -11,7 +11,7 @@ import NotFound from "./pages/NotFound";
 import CreateInvoice from "./pages/CreateInvoice";
 import EditInvoice from "./pages/EditInvoice";
 import ManageClients from "./pages/ManageClients";
-import CompanyProfile from "./pages/CompanyProfile";
+import ManageCompanies from "./pages/ManageCompanies";
 import ViewInvoice from "./pages/ViewInvoice";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -60,10 +60,10 @@ const App = () => (
               } 
             />
             <Route 
-              path="/company-profile" 
+              path="/manage-companies" 
               element={
                 <ProtectedRoute>
-                  <CompanyProfile />
+                  <ManageCompanies />
                 </ProtectedRoute>
               } 
             />
