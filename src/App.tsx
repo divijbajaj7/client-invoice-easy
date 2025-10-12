@@ -13,6 +13,7 @@ import EditInvoice from "./pages/EditInvoice";
 import ManageClients from "./pages/ManageClients";
 import ManageCompanies from "./pages/ManageCompanies";
 import ViewInvoice from "./pages/ViewInvoice";
+import InvoiceLedger from "./pages/InvoiceLedger";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -72,6 +73,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <ViewInvoice />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/invoice-ledger" 
+              element={
+                <ProtectedRoute>
+                  <InvoiceLedger />
                 </ProtectedRoute>
               } 
             />

@@ -18,7 +18,8 @@ import {
   Calendar,
   Eye,
   Trash2,
-  Edit
+  Edit,
+  BookOpen
 } from "lucide-react";
 
 const Dashboard = () => {
@@ -239,7 +240,7 @@ const Dashboard = () => {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate("/create-invoice")}>
             <CardContent className="p-6 text-center">
               <div className="bg-blue-100 p-3 rounded-full w-fit mx-auto mb-4">
@@ -267,6 +268,16 @@ const Dashboard = () => {
               </div>
               <h3 className="text-lg font-semibold mb-2">Manage Companies</h3>
               <p className="text-gray-600 text-sm">Add and manage multiple company profiles</p>
+            </CardContent>
+          </Card>
+
+          <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate("/invoice-ledger")}>
+            <CardContent className="p-6 text-center">
+              <div className="bg-purple-100 p-3 rounded-full w-fit mx-auto mb-4">
+                <BookOpen className="h-8 w-8 text-purple-600" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2">Invoice Ledger</h3>
+              <p className="text-gray-600 text-sm">Track all invoices and payment status</p>
             </CardContent>
           </Card>
         </div>
