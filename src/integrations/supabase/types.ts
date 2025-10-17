@@ -118,6 +118,7 @@ export type Database = {
           is_default: boolean | null
           name: string
           template_data: Json
+          user_id: string | null
         }
         Insert: {
           created_at?: string
@@ -126,6 +127,7 @@ export type Database = {
           is_default?: boolean | null
           name: string
           template_data: Json
+          user_id?: string | null
         }
         Update: {
           created_at?: string
@@ -134,6 +136,7 @@ export type Database = {
           is_default?: boolean | null
           name?: string
           template_data?: Json
+          user_id?: string | null
         }
         Relationships: []
       }
