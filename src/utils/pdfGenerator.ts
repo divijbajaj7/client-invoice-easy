@@ -123,6 +123,11 @@ export const generateInvoicePDF = (invoice: InvoiceData) => {
     });
   }
   
+  if (companyDetails.gst) {
+    doc.text(`GST: ${companyDetails.gst}`, leftColumnX, yPos);
+    yPos += 6;
+  }
+  
   // To section (Client details) - right side
   let clientYPos = 85;
   doc.setFontSize(11);
@@ -273,14 +278,7 @@ export const generateInvoicePDF = (invoice: InvoiceData) => {
   doc.text('Total:', totalsStartX, yPos);
   doc.text(`Rs${invoice.total_amount.toLocaleString('en-IN')}`, totalsValueX, yPos, { align: 'right' });
   
-  yPos += 25;
-  
-  // Check if we need a new page for banking details
-  const bankingHeight = 90; // Estimated height for banking section
-  if (yPos + bankingHeight > pageHeight - margin) {
-    doc.addPage();
-    yPos = 40;
-  }
+  yPos += 20;
   
   // Banking Details - exactly matching the view layout
   doc.setFontSize(14);
