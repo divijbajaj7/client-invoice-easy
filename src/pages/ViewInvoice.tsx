@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Download } from "lucide-react";
 import { toast } from "sonner";
 import { generateInvoicePDF } from "@/utils/pdfGenerator";
+import html2canvas from "html2canvas";
 
 interface Invoice {
   id: string;
@@ -95,6 +96,34 @@ const ViewInvoice = () => {
     }
   };
 
+  const handleDownloadJPEG = async () => {
+    if (!invoice) return;
+
+    try {
+      const element = document.getElementById('invoice-content');
+      if (!element) {
+        toast.error("Invoice content not found");
+        return;
+      }
+
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        backgroundColor: '#ffffff',
+        logging: false,
+      });
+
+      const link = document.createElement('a');
+      link.download = `Invoice-${invoice.invoice_number}.jpg`;
+      link.href = canvas.toDataURL('image/jpeg', 0.95);
+      link.click();
+
+      toast.success("JPEG downloaded successfully!");
+    } catch (error) {
+      console.error("Error generating JPEG:", error);
+      toast.error("Failed to generate JPEG");
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -125,13 +154,19 @@ const ViewInvoice = () => {
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Dashboard
           </Button>
-          <Button onClick={handleDownloadPDF}>
-            <Download className="h-4 w-4 mr-2" />
-            Download PDF
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={handleDownloadPDF}>
+              <Download className="h-4 w-4 mr-2" />
+              Download PDF
+            </Button>
+            <Button onClick={handleDownloadJPEG}>
+              <Download className="h-4 w-4 mr-2" />
+              Download JPEG
+            </Button>
+          </div>
         </div>
 
-        <Card>
+        <Card id="invoice-content">
           <CardHeader>
             <CardTitle className="text-3xl font-bold text-center">INVOICE</CardTitle>
             <div className="text-center text-muted-foreground">
