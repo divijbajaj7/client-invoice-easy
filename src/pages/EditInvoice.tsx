@@ -20,7 +20,9 @@ const invoiceSchema = z.object({
   invoiceNumber: z.string().min(1, "Invoice number is required"),
   invoiceDate: z.string().min(1, "Invoice date is required"),
   dueDate: z.string().optional(),
-  gstRate: z.number().min(0).max(100),
+  igstRate: z.number().min(0).max(100),
+  sgstRate: z.number().min(0).max(100),
+  cgstRate: z.number().min(0).max(100),
   notes: z.string().optional(),
 });
 
@@ -49,7 +51,9 @@ const EditInvoice = () => {
       invoiceNumber: "",
       invoiceDate: "",
       dueDate: "",
-      gstRate: 18,
+      igstRate: 0,
+      sgstRate: 0,
+      cgstRate: 0,
       notes: "",
     },
   });
@@ -80,7 +84,9 @@ const EditInvoice = () => {
           invoiceNumber: invoice.invoice_number,
           invoiceDate: invoice.invoice_date,
           dueDate: invoice.due_date || "",
-          gstRate: invoice.gst_rate,
+          igstRate: invoice.igst_rate || 0,
+          sgstRate: invoice.sgst_rate || 0,
+          cgstRate: invoice.cgst_rate || 0,
           notes: invoice.notes || "",
         });
 
@@ -144,10 +150,15 @@ const EditInvoice = () => {
 
   const calculateTotals = () => {
     const subtotal = items.reduce((sum, item) => sum + item.amount, 0);
-    const gstRate = form.watch("gstRate") || 0;
-    const gstAmount = (subtotal * gstRate) / 100;
-    const total = subtotal + gstAmount;
-    return { subtotal, gstAmount, total };
+    const igstRate = form.watch("igstRate") || 0;
+    const sgstRate = form.watch("sgstRate") || 0;
+    const cgstRate = form.watch("cgstRate") || 0;
+    const igstAmount = (subtotal * igstRate) / 100;
+    const sgstAmount = (subtotal * sgstRate) / 100;
+    const cgstAmount = (subtotal * cgstRate) / 100;
+    const totalTax = igstAmount + sgstAmount + cgstAmount;
+    const total = subtotal + totalTax;
+    return { subtotal, igstAmount, sgstAmount, cgstAmount, totalTax, total };
   };
 
   const onSubmit = async (values: z.infer<typeof invoiceSchema>) => {
@@ -160,7 +171,7 @@ const EditInvoice = () => {
     setLoading(true);
 
     try {
-      const { subtotal, gstAmount, total } = calculateTotals();
+      const { subtotal, igstAmount, sgstAmount, cgstAmount, total } = calculateTotals();
 
       const { error } = await supabase
         .from("invoices")
@@ -171,8 +182,12 @@ const EditInvoice = () => {
           invoice_date: values.invoiceDate,
           due_date: values.dueDate || null,
           subtotal,
-          gst_rate: values.gstRate,
-          gst_amount: gstAmount,
+          igst_rate: values.igstRate,
+          igst_amount: igstAmount,
+          sgst_rate: values.sgstRate,
+          sgst_amount: sgstAmount,
+          cgst_rate: values.cgstRate,
+          cgst_amount: cgstAmount,
           total_amount: total,
           items: JSON.parse(JSON.stringify(items)),
           notes: values.notes || null,
@@ -200,7 +215,7 @@ const EditInvoice = () => {
     );
   }
 
-  const { subtotal, gstAmount, total } = calculateTotals();
+  const { subtotal, igstAmount, sgstAmount, cgstAmount, totalTax, total } = calculateTotals();
 
   return (
     <div className="min-h-screen bg-background">
@@ -291,14 +306,52 @@ const EditInvoice = () => {
 
                   <FormField
                     control={form.control}
-                    name="gstRate"
+                    name="igstRate"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>GST Rate (%)</FormLabel>
+                        <FormLabel>IGST Rate (%)</FormLabel>
                         <FormControl>
                           <Input
                             type="number"
-                            placeholder="18"
+                            placeholder="0"
+                            {...field}
+                            onChange={(e) => field.onChange(Number(e.target.value))}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="sgstRate"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>SGST Rate (%)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="0"
+                            {...field}
+                            onChange={(e) => field.onChange(Number(e.target.value))}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="cgstRate"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>CGST Rate (%)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="0"
                             {...field}
                             onChange={(e) => field.onChange(Number(e.target.value))}
                           />
@@ -407,15 +460,29 @@ const EditInvoice = () => {
                 {items.length > 0 && (
                   <div className="mt-6 space-y-2 text-right">
                     <div className="flex justify-end">
-                      <div className="w-64">
+                      <div className="w-64 space-y-2">
                         <div className="flex justify-between">
                           <span>Subtotal:</span>
                           <span>₹{subtotal.toFixed(2)}</span>
                         </div>
-                        <div className="flex justify-between">
-                          <span>GST ({form.watch("gstRate")}%):</span>
-                          <span>₹{gstAmount.toFixed(2)}</span>
-                        </div>
+                        {igstAmount > 0 && (
+                          <div className="flex justify-between">
+                            <span>IGST ({form.watch("igstRate")}%):</span>
+                            <span>₹{igstAmount.toFixed(2)}</span>
+                          </div>
+                        )}
+                        {sgstAmount > 0 && (
+                          <div className="flex justify-between">
+                            <span>SGST ({form.watch("sgstRate")}%):</span>
+                            <span>₹{sgstAmount.toFixed(2)}</span>
+                          </div>
+                        )}
+                        {cgstAmount > 0 && (
+                          <div className="flex justify-between">
+                            <span>CGST ({form.watch("cgstRate")}%):</span>
+                            <span>₹{cgstAmount.toFixed(2)}</span>
+                          </div>
+                        )}
                         <div className="flex justify-between font-bold text-lg border-t pt-2">
                           <span>Total:</span>
                           <span>₹{total.toFixed(2)}</span>

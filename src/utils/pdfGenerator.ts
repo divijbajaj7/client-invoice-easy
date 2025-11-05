@@ -12,8 +12,14 @@ interface InvoiceData {
   invoice_date: string;
   due_date?: string;
   subtotal: number;
-  gst_rate: number;
-  gst_amount: number;
+  gst_rate?: number;
+  gst_amount?: number;
+  igst_rate?: number;
+  igst_amount?: number;
+  sgst_rate?: number;
+  sgst_amount?: number;
+  cgst_rate?: number;
+  cgst_amount?: number;
   total_amount: number;
   items: InvoiceItem[];
   notes?: string;
@@ -264,11 +270,25 @@ export const generateInvoicePDF = (invoice: InvoiceData) => {
   doc.text('Subtotal:', totalsStartX, yPos);
   doc.text(`Rs${invoice.subtotal.toLocaleString('en-IN')}`, totalsValueX, yPos, { align: 'right' });
   
-  // Only show GST if there's a GST amount
-  if (invoice.gst_amount > 0) {
+  // Show IGST if present
+  if (invoice.igst_amount && invoice.igst_amount > 0) {
     yPos += 10;
-    doc.text('GST:', totalsStartX, yPos);
-    doc.text(`Rs${invoice.gst_amount.toLocaleString('en-IN')}`, totalsValueX, yPos, { align: 'right' });
+    doc.text(`IGST @ ${invoice.igst_rate}%:`, totalsStartX, yPos);
+    doc.text(`Rs${invoice.igst_amount.toLocaleString('en-IN')}`, totalsValueX, yPos, { align: 'right' });
+  }
+  
+  // Show SGST if present
+  if (invoice.sgst_amount && invoice.sgst_amount > 0) {
+    yPos += 10;
+    doc.text(`SGST @ ${invoice.sgst_rate}%:`, totalsStartX, yPos);
+    doc.text(`Rs${invoice.sgst_amount.toLocaleString('en-IN')}`, totalsValueX, yPos, { align: 'right' });
+  }
+  
+  // Show CGST if present
+  if (invoice.cgst_amount && invoice.cgst_amount > 0) {
+    yPos += 10;
+    doc.text(`CGST @ ${invoice.cgst_rate}%:`, totalsStartX, yPos);
+    doc.text(`Rs${invoice.cgst_amount.toLocaleString('en-IN')}`, totalsValueX, yPos, { align: 'right' });
   }
   
   // Total

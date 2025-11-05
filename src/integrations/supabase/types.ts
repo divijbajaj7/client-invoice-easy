@@ -142,6 +142,8 @@ export type Database = {
       }
       invoices: {
         Row: {
+          cgst_amount: number | null
+          cgst_rate: number | null
           client_id: string
           company_id: string
           created_at: string
@@ -149,10 +151,14 @@ export type Database = {
           gst_amount: number | null
           gst_rate: number | null
           id: string
+          igst_amount: number | null
+          igst_rate: number | null
           invoice_date: string
           invoice_number: string
           items: Json
           notes: string | null
+          sgst_amount: number | null
+          sgst_rate: number | null
           status: string | null
           subtotal: number
           template_id: string | null
@@ -161,6 +167,8 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          cgst_amount?: number | null
+          cgst_rate?: number | null
           client_id: string
           company_id: string
           created_at?: string
@@ -168,10 +176,14 @@ export type Database = {
           gst_amount?: number | null
           gst_rate?: number | null
           id?: string
+          igst_amount?: number | null
+          igst_rate?: number | null
           invoice_date: string
           invoice_number: string
           items?: Json
           notes?: string | null
+          sgst_amount?: number | null
+          sgst_rate?: number | null
           status?: string | null
           subtotal?: number
           template_id?: string | null
@@ -180,6 +192,8 @@ export type Database = {
           user_id: string
         }
         Update: {
+          cgst_amount?: number | null
+          cgst_rate?: number | null
           client_id?: string
           company_id?: string
           created_at?: string
@@ -187,10 +201,14 @@ export type Database = {
           gst_amount?: number | null
           gst_rate?: number | null
           id?: string
+          igst_amount?: number | null
+          igst_rate?: number | null
           invoice_date?: string
           invoice_number?: string
           items?: Json
           notes?: string | null
+          sgst_amount?: number | null
+          sgst_rate?: number | null
           status?: string | null
           subtotal?: number
           template_id?: string | null
@@ -227,10 +245,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      get_next_invoice_number: {
-        Args: { user_uuid: string }
-        Returns: string
-      }
+      get_next_invoice_number: { Args: { user_uuid: string }; Returns: string }
     }
     Enums: {
       [_ in never]: never

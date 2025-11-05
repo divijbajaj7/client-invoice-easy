@@ -17,6 +17,12 @@ interface Invoice {
   subtotal: number;
   gst_amount: number;
   gst_rate: number;
+  igst_amount: number;
+  igst_rate: number;
+  sgst_amount: number;
+  sgst_rate: number;
+  cgst_amount: number;
+  cgst_rate: number;
   total_amount: number;
   status: string;
   notes: string | null;
@@ -244,10 +250,22 @@ const ViewInvoice = () => {
                   <span>Subtotal:</span>
                   <span>₹{parseFloat(invoice.subtotal.toString()).toLocaleString('en-IN')}</span>
                 </div>
-                {invoice.gst_amount > 0 && (
+                {invoice.igst_amount > 0 && (
                   <div className="flex justify-between">
-                    <span>GST:</span>
-                    <span>₹{parseFloat(invoice.gst_amount.toString()).toLocaleString('en-IN')}</span>
+                    <span>IGST @ {invoice.igst_rate}%:</span>
+                    <span>₹{parseFloat(invoice.igst_amount.toString()).toLocaleString('en-IN')}</span>
+                  </div>
+                )}
+                {invoice.sgst_amount > 0 && (
+                  <div className="flex justify-between">
+                    <span>SGST @ {invoice.sgst_rate}%:</span>
+                    <span>₹{parseFloat(invoice.sgst_amount.toString()).toLocaleString('en-IN')}</span>
+                  </div>
+                )}
+                {invoice.cgst_amount > 0 && (
+                  <div className="flex justify-between">
+                    <span>CGST @ {invoice.cgst_rate}%:</span>
+                    <span>₹{parseFloat(invoice.cgst_amount.toString()).toLocaleString('en-IN')}</span>
                   </div>
                 )}
                 <div className="flex justify-between font-bold text-lg border-t pt-2">
