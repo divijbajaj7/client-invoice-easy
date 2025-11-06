@@ -41,7 +41,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       await supabase.auth.signOut();
       window.location.href = "/";
     } catch (error) {
-      console.error("Error signing out:", error);
+      if (import.meta.env.DEV) {
+        console.error("Error signing out:", error);
+      }
     }
   };
 

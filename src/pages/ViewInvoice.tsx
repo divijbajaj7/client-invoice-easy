@@ -75,7 +75,9 @@ const ViewInvoice = () => {
         if (error) throw error;
         setInvoice(data as Invoice);
       } catch (error) {
-        console.error("Error fetching invoice:", error);
+        if (import.meta.env.DEV) {
+          console.error("Error fetching invoice:", error);
+        }
         toast.error("Failed to load invoice");
         navigate("/dashboard");
       } finally {
@@ -97,7 +99,9 @@ const ViewInvoice = () => {
       await generateInvoicePDF(invoiceData);
       toast.success("PDF downloaded successfully!");
     } catch (error) {
-      console.error("Error generating PDF:", error);
+      if (import.meta.env.DEV) {
+        console.error("Error generating PDF:", error);
+      }
       toast.error("Failed to generate PDF");
     }
   };
@@ -125,7 +129,9 @@ const ViewInvoice = () => {
 
       toast.success("JPEG downloaded successfully!");
     } catch (error) {
-      console.error("Error generating JPEG:", error);
+      if (import.meta.env.DEV) {
+        console.error("Error generating JPEG:", error);
+      }
       toast.error("Failed to generate JPEG");
     }
   };

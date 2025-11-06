@@ -6,6 +6,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { FileText, Calculator, Mail, Building } from "lucide-react";
+import { z } from "zod";
+
+const authSchema = z.object({
+  email: z.string().email('Invalid email address').max(255, 'Email must be less than 255 characters'),
+  password: z.string().min(8, 'Password must be at least 8 characters')
+    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+    .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
+    .regex(/[0-9]/, 'Password must contain at least one number')
+});
 
 const Auth = () => {
   const [email, setEmail] = useState("");
@@ -28,6 +37,20 @@ const Auth = () => {
     setLoading(true);
 
     try {
+      // Validate input
+      const validationResult = authSchema.safeParse({ email, password });
+      
+      if (!validationResult.success) {
+        const firstError = validationResult.error.errors[0];
+        toast({
+          variant: "destructive",
+          title: "Validation error",
+          description: firstError.message,
+        });
+        setLoading(false);
+        return;
+      }
+
       if (isLogin) {
         const { error } = await supabase.auth.signInWithPassword({
           email,

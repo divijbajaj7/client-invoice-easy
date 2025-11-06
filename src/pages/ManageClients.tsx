@@ -78,7 +78,9 @@ const ManageClients = () => {
       if (error) throw error;
       setClients(data || []);
     } catch (error) {
-      console.error('Error fetching clients:', error);
+      if (import.meta.env.DEV) {
+        console.error('Error fetching clients:', error);
+      }
       toast({
         title: "Error",
         description: "Failed to fetch clients",
@@ -129,7 +131,9 @@ const ManageClients = () => {
       setEditingClient(null);
       fetchClients();
     } catch (error) {
-      console.error('Error saving client:', error);
+      if (import.meta.env.DEV) {
+        console.error('Error saving client:', error);
+      }
       toast({
         title: "Error",
         description: "Failed to save client",
@@ -169,7 +173,9 @@ const ManageClients = () => {
       });
       fetchClients();
     } catch (error) {
-      console.error('Error deleting client:', error);
+      if (import.meta.env.DEV) {
+        console.error('Error deleting client:', error);
+      }
       toast({
         title: "Error",
         description: "Failed to delete client",

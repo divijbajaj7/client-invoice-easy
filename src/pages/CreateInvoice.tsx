@@ -126,7 +126,9 @@ const CreateInvoice = () => {
       if (error) throw error;
       return data || "1";
     } catch (error) {
-      console.error('Error getting next invoice number:', error);
+      if (import.meta.env.DEV) {
+        console.error('Error getting next invoice number:', error);
+      }
       return "1";
     }
   };
@@ -183,7 +185,9 @@ const CreateInvoice = () => {
       toast.success("Invoice created successfully!");
       navigate("/dashboard");
     } catch (error) {
-      console.error("Error creating invoice:", error);
+      if (import.meta.env.DEV) {
+        console.error("Error creating invoice:", error);
+      }
       toast.error("Failed to create invoice");
     } finally {
       setLoading(false);
