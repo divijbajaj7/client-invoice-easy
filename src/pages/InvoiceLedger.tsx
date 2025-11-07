@@ -94,6 +94,48 @@ const InvoiceLedger = () => {
     ?.filter((inv) => inv.status !== 'paid')
     .reduce((sum, invoice) => sum + Number(invoice.total_amount), 0);
 
+  const totalGst = filteredInvoices?.reduce(
+    (sum, invoice) => sum + Number(invoice.igst_amount || 0) + Number(invoice.cgst_amount || 0) + Number(invoice.sgst_amount || 0),
+    0
+  );
+
+  const exportToCSV = (invoice: any) => {
+    const csvData = [
+      ['Invoice Details'],
+      ['Invoice Number', invoice.invoice_number],
+      ['Date', format(new Date(invoice.invoice_date), 'dd MMM yyyy')],
+      ['Client', invoice.clients?.company_name || invoice.clients?.name],
+      ['Status', invoice.status],
+      [],
+      ['Item Details'],
+      ['Description', 'Quantity', 'Rate', 'Amount'],
+      ...(invoice.items || []).map((item: any) => [
+        item.description,
+        item.quantity,
+        item.rate,
+        item.amount
+      ]),
+      [],
+      ['Summary'],
+      ['Subtotal', invoice.subtotal],
+      ['IGST', invoice.igst_amount || 0],
+      ['CGST', invoice.cgst_amount || 0],
+      ['SGST', invoice.sgst_amount || 0],
+      ['Total Amount', invoice.total_amount],
+    ];
+
+    const csvContent = csvData.map(row => row.join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `invoice_${invoice.invoice_number}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto">
@@ -112,10 +154,14 @@ const InvoiceLedger = () => {
         </div>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <div className="bg-card p-4 rounded-lg border">
             <p className="text-sm text-muted-foreground">Total Amount</p>
             <p className="text-2xl font-bold">₹{totalAmount?.toFixed(2) || '0.00'}</p>
+          </div>
+          <div className="bg-card p-4 rounded-lg border">
+            <p className="text-sm text-muted-foreground">Total GST</p>
+            <p className="text-2xl font-bold">₹{totalGst?.toFixed(2) || '0.00'}</p>
           </div>
           <div className="bg-card p-4 rounded-lg border">
             <p className="text-sm text-muted-foreground">Received</p>
@@ -151,6 +197,7 @@ const InvoiceLedger = () => {
                 <TableHead>Invoice #</TableHead>
                 <TableHead>Client</TableHead>
                 <TableHead>Amount</TableHead>
+                <TableHead>GST Amount</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
@@ -158,13 +205,13 @@ const InvoiceLedger = () => {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8">
+                  <TableCell colSpan={7} className="text-center py-8">
                     Loading...
                   </TableCell>
                 </TableRow>
               ) : filteredInvoices?.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                     No invoices found
                   </TableCell>
                 </TableRow>
@@ -181,6 +228,9 @@ const InvoiceLedger = () => {
                       {invoice.clients?.company_name || invoice.clients?.name}
                     </TableCell>
                     <TableCell>₹{Number(invoice.total_amount).toFixed(2)}</TableCell>
+                    <TableCell>
+                      ₹{(Number(invoice.igst_amount || 0) + Number(invoice.cgst_amount || 0) + Number(invoice.sgst_amount || 0)).toFixed(2)}
+                    </TableCell>
                     <TableCell>
                       <Select
                         value={invoice.status || 'draft'}
@@ -203,7 +253,8 @@ const InvoiceLedger = () => {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => navigate(`/invoice/${invoice.id}`)}
+                          onClick={() => exportToCSV(invoice)}
+                          title="Export as CSV"
                         >
                           <Eye className="w-4 h-4" />
                         </Button>
