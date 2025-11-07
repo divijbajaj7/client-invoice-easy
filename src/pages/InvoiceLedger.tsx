@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ArrowLeft, Eye, Edit } from 'lucide-react';
+import { ArrowLeft, Eye, Edit, Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 
@@ -136,6 +136,45 @@ const InvoiceLedger = () => {
     document.body.removeChild(link);
   };
 
+  const exportTableToCSV = () => {
+    if (!filteredInvoices || filteredInvoices.length === 0) {
+      toast({
+        title: 'No data to export',
+        description: 'There are no invoices to export.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const csvData = [
+      ['Date', 'Invoice #', 'Client', 'Amount', 'GST Amount', 'Status'],
+      ...filteredInvoices.map((invoice) => [
+        format(new Date(invoice.invoice_date), 'dd MMM yyyy'),
+        invoice.invoice_number,
+        invoice.clients?.company_name || invoice.clients?.name,
+        Number(invoice.total_amount).toFixed(2),
+        (Number(invoice.igst_amount || 0) + Number(invoice.cgst_amount || 0) + Number(invoice.sgst_amount || 0)).toFixed(2),
+        invoice.status,
+      ]),
+    ];
+
+    const csvContent = csvData.map(row => row.join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `invoice_ledger_${format(new Date(), 'yyyy-MM-dd')}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast({
+      title: 'Export successful',
+      description: 'Invoice ledger has been exported to CSV.',
+    });
+  };
+
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto">
@@ -151,6 +190,10 @@ const InvoiceLedger = () => {
             </Button>
             <h1 className="text-3xl font-bold">Invoice Ledger</h1>
           </div>
+          <Button onClick={exportTableToCSV} className="gap-2">
+            <Download className="w-4 h-4" />
+            Export as File
+          </Button>
         </div>
 
         {/* Summary Cards */}
