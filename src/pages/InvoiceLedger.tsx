@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ArrowLeft, Eye, Edit, Download } from 'lucide-react';
+import { ArrowLeft, Eye, Edit, Download, FileText } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 
@@ -29,6 +29,7 @@ const InvoiceLedger = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [clientFilter, setClientFilter] = useState<string>('all');
 
   const { data: invoices, isLoading } = useQuery({
     queryKey: ['invoices', user?.id],
@@ -76,9 +77,17 @@ const InvoiceLedger = () => {
     },
   });
 
+  const uniqueClients = Array.from(
+    new Set(
+      invoices?.map((inv) => inv.clients?.company_name || inv.clients?.name || 'Unknown')
+    )
+  ).sort();
+
   const filteredInvoices = invoices?.filter((invoice) => {
-    if (statusFilter === 'all') return true;
-    return invoice.status === statusFilter;
+    const statusMatch = statusFilter === 'all' || invoice.status === statusFilter;
+    const clientMatch = clientFilter === 'all' || 
+      (invoice.clients?.company_name || invoice.clients?.name) === clientFilter;
+    return statusMatch && clientMatch;
   });
 
   const totalAmount = filteredInvoices?.reduce(
@@ -216,8 +225,8 @@ const InvoiceLedger = () => {
           </div>
         </div>
 
-        {/* Filter */}
-        <div className="mb-4">
+        {/* Filters */}
+        <div className="mb-4 flex gap-4">
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-48">
               <SelectValue placeholder="Filter by status" />
@@ -227,6 +236,20 @@ const InvoiceLedger = () => {
               <SelectItem value="draft">Draft</SelectItem>
               <SelectItem value="sent">Sent</SelectItem>
               <SelectItem value="paid">Paid</SelectItem>
+            </SelectContent>
+          </Select>
+          
+          <Select value={clientFilter} onValueChange={setClientFilter}>
+            <SelectTrigger className="w-48">
+              <SelectValue placeholder="Filter by client" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Clients</SelectItem>
+              {uniqueClients.map((client) => (
+                <SelectItem key={client} value={client}>
+                  {client}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
@@ -296,15 +319,24 @@ const InvoiceLedger = () => {
                         <Button
                           variant="ghost"
                           size="sm"
+                          onClick={() => navigate(`/view-invoice/${invoice.id}`)}
+                          title="View Invoice"
+                        >
+                          <FileText className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           onClick={() => exportToCSV(invoice)}
                           title="Export as CSV"
                         >
-                          <Eye className="w-4 h-4" />
+                          <Download className="w-4 h-4" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => navigate(`/edit-invoice/${invoice.id}`)}
+                          title="Edit Invoice"
                         >
                           <Edit className="w-4 h-4" />
                         </Button>
