@@ -220,6 +220,15 @@ const CreateInvoice = () => {
       </header>
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Company Name Header */}
+        {form.watch("companyId") && (
+          <div className="mb-6 text-center">
+            <h2 className="text-2xl font-bold text-primary">
+              {companies.find(c => c.id === form.watch("companyId"))?.name} Invoice
+            </h2>
+          </div>
+        )}
+
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             {/* Basic Information */}
