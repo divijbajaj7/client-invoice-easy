@@ -2,6 +2,7 @@ import jsPDF from 'jspdf';
 
 interface InvoiceItem {
   description: string;
+  hsnSacCode?: string;
   quantity: number;
   rate: number;
   amount: number;
@@ -67,7 +68,17 @@ export const generateInvoicePDF = (invoice: InvoiceData) => {
     email: invoice.companies?.email || "thinklyticsaiconsulting@gmail.com"
   };
   
-  let yPos = 40;
+  let yPos = 30;
+  
+  // Company name above INVOICE title
+  doc.setFontSize(16);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(59, 130, 246); // Primary blue color
+  const companyNameTitle = companyDetails.name;
+  const companyNameWidth = doc.getTextWidth(companyNameTitle);
+  doc.text(companyNameTitle, (pageWidth - companyNameWidth) / 2, yPos);
+  
+  yPos += 15;
   
   // Header - INVOICE title centered
   doc.setFontSize(28);
@@ -194,14 +205,16 @@ export const generateInvoicePDF = (invoice: InvoiceData) => {
   const tableStartY = yPos;
   const tableWidth = pageWidth - 2 * margin;
   
-  // Column widths for proper alignment
-  const descriptionWidth = tableWidth * 0.5;  // 50% for description
-  const quantityWidth = tableWidth * 0.15;    // 15% for quantity  
-  const rateWidth = tableWidth * 0.175;       // 17.5% for rate
-  const amountWidth = tableWidth * 0.175;     // 17.5% for amount
+  // Column widths for proper alignment (with HSN/SAC column)
+  const descriptionWidth = tableWidth * 0.38;  // 38% for description
+  const hsnSacWidth = tableWidth * 0.15;       // 15% for HSN/SAC
+  const quantityWidth = tableWidth * 0.12;     // 12% for quantity  
+  const rateWidth = tableWidth * 0.175;        // 17.5% for rate
+  const amountWidth = tableWidth * 0.175;      // 17.5% for amount
   
   const descriptionX = margin + 5;
-  const quantityX = margin + descriptionWidth;
+  const hsnSacX = margin + descriptionWidth;
+  const quantityX = hsnSacX + hsnSacWidth;
   const rateX = quantityX + quantityWidth;
   const amountX = rateX + rateWidth;
   
@@ -213,7 +226,8 @@ export const generateInvoicePDF = (invoice: InvoiceData) => {
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(0, 0, 0);
   doc.text('Description', descriptionX, yPos + 8);
-  doc.text('Quantity', quantityX + 5, yPos + 8);
+  doc.text('HSN/SAC', hsnSacX + 3, yPos + 8);
+  doc.text('Qty', quantityX + 5, yPos + 8);
   doc.text('Rate', rateX + 5, yPos + 8);
   doc.text('Amount', amountX + 5, yPos + 8);
   
@@ -247,9 +261,10 @@ export const generateInvoicePDF = (invoice: InvoiceData) => {
         doc.text(line, descriptionX, yPos + 8 + (lineIndex * 6));
       });
       
-      // Quantity, Rate, Amount - center them vertically in the row
+      // HSN/SAC, Quantity, Rate, Amount - center them vertically in the row
       const verticalCenter = yPos + (rowHeight / 2) + 2;
-      doc.text(item.quantity.toString(), quantityX + 15, verticalCenter);
+      doc.text(item.hsnSacCode || '-', hsnSacX + 3, verticalCenter);
+      doc.text(item.quantity.toString(), quantityX + 10, verticalCenter);
       doc.text(`Rs${item.rate.toLocaleString('en-IN')}`, rateX + 5, verticalCenter);
       doc.text(`Rs${item.amount.toLocaleString('en-IN')}`, amountX + 5, verticalCenter);
       

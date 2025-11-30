@@ -30,6 +30,7 @@ const invoiceSchema = z.object({
 interface InvoiceItem {
   id: string;
   description: string;
+  hsnSacCode: string;
   quantity: number;
   rate: number;
   amount: number;
@@ -78,6 +79,7 @@ const CreateInvoice = () => {
     const newItem: InvoiceItem = {
       id: Math.random().toString(36).substr(2, 9),
       description: "",
+      hsnSacCode: "",
       quantity: 1,
       rate: 0,
       amount: 0,
@@ -408,12 +410,20 @@ const CreateInvoice = () => {
                 <div className="space-y-4">
                   {items.map((item, index) => (
                     <div key={item.id} className="grid grid-cols-12 gap-4 items-end p-4 border rounded-lg">
-                      <div className="col-span-4">
+                      <div className="col-span-3">
                         <Label>Description</Label>
                         <Input
                           placeholder="Item description"
                           value={item.description}
                           onChange={(e) => updateItem(item.id, 'description', e.target.value)}
+                        />
+                      </div>
+                      <div className="col-span-2">
+                        <Label>HSN/SAC Code</Label>
+                        <Input
+                          placeholder="e.g., 998311"
+                          value={item.hsnSacCode}
+                          onChange={(e) => updateItem(item.id, 'hsnSacCode', e.target.value)}
                         />
                       </div>
                       <div className="col-span-2">
@@ -434,7 +444,7 @@ const CreateInvoice = () => {
                           onChange={(e) => updateItem(item.id, 'rate', parseFloat(e.target.value) || 0)}
                         />
                       </div>
-                      <div className="col-span-3">
+                      <div className="col-span-2">
                         <Label>Amount</Label>
                         <Input
                           value={item.amount.toFixed(2)}
