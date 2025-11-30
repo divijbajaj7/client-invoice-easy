@@ -180,6 +180,9 @@ const ViewInvoice = () => {
 
         <Card id="invoice-content">
           <CardHeader>
+            <div className="text-center text-xl font-semibold text-primary mb-1">
+              {invoice.companies.name}
+            </div>
             <CardTitle className="text-3xl font-bold text-center">INVOICE</CardTitle>
             <div className="text-center text-muted-foreground">
               Invoice #{invoice.invoice_number}
@@ -231,6 +234,7 @@ const ViewInvoice = () => {
                 <thead className="bg-muted">
                   <tr>
                     <th className="text-left p-3">Description</th>
+                    <th className="text-left p-3">HSN/SAC</th>
                     <th className="text-right p-3">Quantity</th>
                     <th className="text-right p-3">Rate</th>
                     <th className="text-right p-3">Amount</th>
@@ -240,6 +244,7 @@ const ViewInvoice = () => {
                   {Array.isArray(invoice.items) && invoice.items.map((item: any, index: number) => (
                     <tr key={index} className="border-t">
                       <td className="p-3">{item.description}</td>
+                      <td className="p-3">{item.hsnSacCode || '-'}</td>
                       <td className="text-right p-3">{item.quantity}</td>
                       <td className="text-right p-3">₹{parseFloat(item.rate).toLocaleString('en-IN')}</td>
                       <td className="text-right p-3">₹{parseFloat(item.amount).toLocaleString('en-IN')}</td>

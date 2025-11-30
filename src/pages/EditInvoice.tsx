@@ -28,6 +28,7 @@ const invoiceSchema = z.object({
 
 interface InvoiceItem {
   description: string;
+  hsnSacCode?: string;
   quantity: number;
   rate: number;
   amount: number;
@@ -130,7 +131,7 @@ const EditInvoice = () => {
   }, [user]);
 
   const addItem = () => {
-    setItems([...items, { description: "", quantity: 1, rate: 0, amount: 0 }]);
+    setItems([...items, { description: "", hsnSacCode: "", quantity: 1, rate: 0, amount: 0 }]);
   };
 
   const updateItem = (index: number, field: keyof InvoiceItem, value: string | number) => {
@@ -405,13 +406,21 @@ const EditInvoice = () => {
               <CardContent>
                 <div className="space-y-4">
                   {items.map((item, index) => (
-                    <div key={index} className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end p-4 border rounded-lg">
+                    <div key={index} className="grid grid-cols-1 md:grid-cols-6 gap-4 items-end p-4 border rounded-lg">
                       <div className="md:col-span-2">
                         <label className="text-sm font-medium">Description</label>
                         <Input
                           placeholder="Item description"
                           value={item.description}
                           onChange={(e) => updateItem(index, "description", e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium">HSN/SAC Code</label>
+                        <Input
+                          placeholder="e.g., 998311"
+                          value={item.hsnSacCode || ""}
+                          onChange={(e) => updateItem(index, "hsnSacCode", e.target.value)}
                         />
                       </div>
                       <div>
