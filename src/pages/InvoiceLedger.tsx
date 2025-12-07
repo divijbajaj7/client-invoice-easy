@@ -55,7 +55,11 @@ const InvoiceLedger = () => {
           *,
           clients (
             name,
-            company_name
+            company_name,
+            address,
+            phone,
+            email,
+            gst_number
           ),
           companies (
             name,
