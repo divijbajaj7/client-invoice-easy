@@ -39,12 +39,14 @@ const InvoiceLedger = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+const [statusFilter, setStatusFilter] = useState<string>('all');
   const [clientFilter, setClientFilter] = useState<string>('all');
   const [bulkDownloadOpen, setBulkDownloadOpen] = useState(false);
   const [startDate, setStartDate] = useState<Date | undefined>();
   const [endDate, setEndDate] = useState<Date | undefined>();
   const [isDownloading, setIsDownloading] = useState(false);
+  const [filterStartDate, setFilterStartDate] = useState<Date | undefined>();
+  const [filterEndDate, setFilterEndDate] = useState<Date | undefined>();
 
   const { data: invoices, isLoading } = useQuery({
     queryKey: ['invoices', user?.id],
@@ -118,7 +120,14 @@ const InvoiceLedger = () => {
     const statusMatch = statusFilter === 'all' || invoice.status === statusFilter;
     const clientMatch = clientFilter === 'all' || 
       (invoice.clients?.company_name || invoice.clients?.name) === clientFilter;
-    return statusMatch && clientMatch;
+    
+    // Date range filter
+    const invoiceDate = new Date(invoice.invoice_date);
+    const dateMatch = 
+      (!filterStartDate || invoiceDate >= filterStartDate) &&
+      (!filterEndDate || invoiceDate <= filterEndDate);
+    
+    return statusMatch && clientMatch && dateMatch;
   });
 
   const totalAmount = filteredInvoices?.reduce(
@@ -158,7 +167,7 @@ const InvoiceLedger = () => {
           ${invoice.companies?.name || 'Company'}
         </div>
         <div style="font-size: 28px; font-weight: bold;">INVOICE</div>
-        <div style="color: #6b7280;">Invoice #${invoice.invoice_number}</div>
+        <div style="color: #6b7280;">Invoice No- ${invoice.invoice_number}</div>
       </div>
       
       <div style="display: flex; gap: 24px; margin-bottom: 24px;">
@@ -518,7 +527,7 @@ const InvoiceLedger = () => {
         </div>
 
         {/* Filters */}
-        <div className="mb-4 flex gap-4">
+        <div className="mb-4 flex flex-wrap gap-4">
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-48">
               <SelectValue placeholder="Filter by status" />
@@ -544,6 +553,68 @@ const InvoiceLedger = () => {
               ))}
             </SelectContent>
           </Select>
+
+          {/* Date Range Filter */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn(
+                  "w-48 justify-start text-left font-normal",
+                  !filterStartDate && "text-muted-foreground"
+                )}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {filterStartDate ? format(filterStartDate, "dd MMM yyyy") : "From Date"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={filterStartDate}
+                onSelect={setFilterStartDate}
+                initialFocus
+                className="pointer-events-auto"
+              />
+            </PopoverContent>
+          </Popover>
+
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn(
+                  "w-48 justify-start text-left font-normal",
+                  !filterEndDate && "text-muted-foreground"
+                )}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {filterEndDate ? format(filterEndDate, "dd MMM yyyy") : "To Date"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={filterEndDate}
+                onSelect={setFilterEndDate}
+                initialFocus
+                className="pointer-events-auto"
+              />
+            </PopoverContent>
+          </Popover>
+
+          {(filterStartDate || filterEndDate) && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setFilterStartDate(undefined);
+                setFilterEndDate(undefined);
+              }}
+            >
+              Clear Dates
+            </Button>
+          )}
         </div>
 
         {/* Table */}
@@ -552,7 +623,7 @@ const InvoiceLedger = () => {
             <TableHeader>
               <TableRow>
                 <TableHead>Date</TableHead>
-                <TableHead>Invoice #</TableHead>
+                <TableHead>Invoice No</TableHead>
                 <TableHead>Client</TableHead>
                 <TableHead>Amount</TableHead>
                 <TableHead>GST Amount</TableHead>

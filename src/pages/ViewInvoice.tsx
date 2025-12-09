@@ -185,7 +185,7 @@ const ViewInvoice = () => {
             </div>
             <CardTitle className="text-3xl font-bold text-center">INVOICE</CardTitle>
             <div className="text-center text-muted-foreground">
-              Invoice #{invoice.invoice_number}
+              Invoice No- {invoice.invoice_number}
             </div>
           </CardHeader>
           <CardContent className="space-y-6">
