@@ -93,7 +93,7 @@ export const generateInvoicePDF = (invoice: InvoiceData) => {
   doc.setFontSize(14);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(128, 128, 128);
-  const invoiceNumberText = `Invoice #${invoice.invoice_number}`;
+  const invoiceNumberText = `Invoice No- ${invoice.invoice_number}`;
   const numberWidth = doc.getTextWidth(invoiceNumberText);
   doc.text(invoiceNumberText, (pageWidth - numberWidth) / 2, yPos);
   
