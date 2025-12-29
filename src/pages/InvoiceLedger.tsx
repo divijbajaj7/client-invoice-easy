@@ -332,15 +332,24 @@ const [statusFilter, setStatusFilter] = useState<string>('all');
     }
 
     const csvData = [
-      ['Date', 'Invoice #', 'Client', 'Amount', 'GST Amount', 'Status'],
-      ...filteredInvoices.map((invoice) => [
-        format(new Date(invoice.invoice_date), 'dd MMM yyyy'),
-        invoice.invoice_number,
-        invoice.clients?.company_name || invoice.clients?.name,
-        Number(invoice.total_amount).toFixed(2),
-        (Number(invoice.igst_amount || 0) + Number(invoice.cgst_amount || 0) + Number(invoice.sgst_amount || 0)).toFixed(2),
-        invoice.status,
-      ]),
+      ['Date', 'Invoice No', 'Client', 'Amount', 'GST Amount', 'TDS (10%)', 'Final Amount', 'Status'],
+      ...filteredInvoices.map((invoice) => {
+        const subtotal = Number(invoice.subtotal);
+        const gstAmount = Number(invoice.igst_amount || 0) + Number(invoice.cgst_amount || 0) + Number(invoice.sgst_amount || 0);
+        const tds = subtotal * 0.10;
+        const finalAmount = (subtotal - tds) + gstAmount;
+        
+        return [
+          format(new Date(invoice.invoice_date), 'dd MMM yyyy'),
+          invoice.invoice_number,
+          invoice.clients?.company_name || invoice.clients?.name,
+          Number(invoice.total_amount).toFixed(2),
+          gstAmount.toFixed(2),
+          tds.toFixed(2),
+          finalAmount.toFixed(2),
+          invoice.status,
+        ];
+      }),
     ];
 
     const csvContent = csvData.map(row => row.join(',')).join('\n');
@@ -627,6 +636,8 @@ const [statusFilter, setStatusFilter] = useState<string>('all');
                 <TableHead>Client</TableHead>
                 <TableHead>Amount</TableHead>
                 <TableHead>GST Amount</TableHead>
+                <TableHead>TDS (10%)</TableHead>
+                <TableHead>Final Amount</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
@@ -634,18 +645,24 @@ const [statusFilter, setStatusFilter] = useState<string>('all');
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8">
+                  <TableCell colSpan={9} className="text-center py-8">
                     Loading...
                   </TableCell>
                 </TableRow>
               ) : filteredInvoices?.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
                     No invoices found
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredInvoices?.map((invoice) => (
+                filteredInvoices?.map((invoice) => {
+                  const subtotal = Number(invoice.subtotal);
+                  const gstAmount = Number(invoice.igst_amount || 0) + Number(invoice.cgst_amount || 0) + Number(invoice.sgst_amount || 0);
+                  const tds = subtotal * 0.10;
+                  const finalAmount = (subtotal - tds) + gstAmount;
+                  
+                  return (
                   <TableRow key={invoice.id}>
                     <TableCell>
                       {format(new Date(invoice.invoice_date), 'dd MMM yyyy')}
@@ -658,8 +675,10 @@ const [statusFilter, setStatusFilter] = useState<string>('all');
                     </TableCell>
                     <TableCell>₹{Number(invoice.total_amount).toFixed(2)}</TableCell>
                     <TableCell>
-                      ₹{(Number(invoice.igst_amount || 0) + Number(invoice.cgst_amount || 0) + Number(invoice.sgst_amount || 0)).toFixed(2)}
+                      ₹{gstAmount.toFixed(2)}
                     </TableCell>
+                    <TableCell>₹{tds.toFixed(2)}</TableCell>
+                    <TableCell>₹{finalAmount.toFixed(2)}</TableCell>
                     <TableCell>
                       <Select
                         value={invoice.status || 'draft'}
@@ -706,7 +725,8 @@ const [statusFilter, setStatusFilter] = useState<string>('all');
                       </div>
                     </TableCell>
                   </TableRow>
-                ))
+                  );
+                })
               )}
             </TableBody>
           </Table>
