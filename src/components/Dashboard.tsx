@@ -126,7 +126,6 @@ const Dashboard = () => {
 
         setRecentInvoices((invoices || []).slice(0, 5));
       } catch (error) {
-        console.error("Error fetching data:", error);
         toast.error("Failed to fetch data");
       } finally {
         setLoading(false);
@@ -144,7 +143,6 @@ const Dashboard = () => {
       doc.save(`invoice-${invoice.invoice_number}.pdf`);
       toast.success("PDF downloaded successfully!");
     } catch (error) {
-      console.error("Error generating PDF:", error);
       toast.error("Failed to generate PDF");
     }
   };
@@ -185,7 +183,6 @@ const Dashboard = () => {
 
       toast.success("Invoice deleted successfully!");
     } catch (error) {
-      console.error("Error deleting invoice:", error);
       toast.error("Failed to delete invoice");
     }
   };

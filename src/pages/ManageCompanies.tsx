@@ -51,13 +51,12 @@ const ManageCompanies = () => {
         .order("created_at", { ascending: false });
 
       if (error) {
-        console.error("Error fetching companies:", error);
         return;
       }
 
       setCompanies(data || []);
     } catch (error) {
-      console.error("Error:", error);
+      // Error handled silently
     }
   };
 
@@ -161,7 +160,6 @@ const ManageCompanies = () => {
         .upload(fileName, logoFile);
 
       if (uploadError) {
-        console.error("Upload error:", uploadError);
         return null;
       }
 
@@ -171,7 +169,6 @@ const ManageCompanies = () => {
 
       return data.publicUrl;
     } catch (error) {
-      console.error("Error uploading logo:", error);
       return null;
     }
   };
@@ -223,7 +220,6 @@ const ManageCompanies = () => {
       }
 
       if (result.error) {
-        console.error("Error saving company:", result.error);
         toast({
           title: "Error",
           description: "Failed to save company profile",
@@ -241,7 +237,6 @@ const ManageCompanies = () => {
       resetForm();
       fetchCompanies();
     } catch (error) {
-      console.error("Error:", error);
       toast({
         title: "Error",
         description: "An unexpected error occurred",
@@ -276,7 +271,6 @@ const ManageCompanies = () => {
 
       fetchCompanies();
     } catch (error) {
-      console.error("Error deleting company:", error);
       toast({
         title: "Error",
         description: "An unexpected error occurred",

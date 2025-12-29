@@ -94,7 +94,6 @@ const EditInvoice = () => {
         // Set items
         setItems(Array.isArray(invoice.items) ? (invoice.items as unknown as InvoiceItem[]) : []);
       } catch (error) {
-        console.error("Error fetching invoice:", error);
         toast.error("Failed to load invoice");
         navigate("/dashboard");
       } finally {
@@ -122,7 +121,6 @@ const EditInvoice = () => {
         setCompanies(companiesResult.data || []);
         setClients(clientsResult.data || []);
       } catch (error) {
-        console.error("Error fetching data:", error);
         toast.error("Failed to load companies or clients");
       }
     };
@@ -201,7 +199,6 @@ const EditInvoice = () => {
       toast.success("Invoice updated successfully!");
       navigate("/dashboard");
     } catch (error) {
-      console.error("Error updating invoice:", error);
       toast.error("Failed to update invoice");
     } finally {
       setLoading(false);
