@@ -148,6 +148,14 @@ const [statusFilter, setStatusFilter] = useState<string>('all');
     0
   );
 
+  // HTML escape function to prevent XSS attacks
+  const escapeHtml = (text: string | null | undefined): string => {
+    if (text === null || text === undefined) return '';
+    const div = document.createElement('div');
+    div.textContent = String(text);
+    return div.innerHTML;
+  };
+
   const generateInvoiceJPEG = async (invoice: any): Promise<string | null> => {
     // Create a temporary container for the invoice
     const container = document.createElement('div');
@@ -164,29 +172,29 @@ const [statusFilter, setStatusFilter] = useState<string>('all');
     container.innerHTML = `
       <div style="text-align: center; margin-bottom: 16px;">
         <div style="font-size: 20px; font-weight: 600; color: #3b82f6; margin-bottom: 4px;">
-          ${invoice.companies?.name || 'Company'}
+          ${escapeHtml(invoice.companies?.name) || 'Company'}
         </div>
         <div style="font-size: 28px; font-weight: bold;">INVOICE</div>
-        <div style="color: #6b7280;">Invoice No- ${invoice.invoice_number}</div>
+        <div style="color: #6b7280;">Invoice No- ${escapeHtml(invoice.invoice_number)}</div>
       </div>
       
       <div style="display: flex; gap: 24px; margin-bottom: 24px;">
         <div style="flex: 1;">
           <h3 style="font-weight: 600; margin-bottom: 8px;">From:</h3>
-          <p style="font-weight: 500;">${invoice.companies?.name || ''}</p>
-          ${invoice.companies?.address ? `<p>${invoice.companies.address}</p>` : ''}
-          ${invoice.companies?.phone ? `<p>Phone: ${invoice.companies.phone}</p>` : ''}
-          ${invoice.companies?.email ? `<p>Email: ${invoice.companies.email}</p>` : ''}
-          ${invoice.companies?.gst_number ? `<p>GST: ${invoice.companies.gst_number}</p>` : ''}
+          <p style="font-weight: 500;">${escapeHtml(invoice.companies?.name)}</p>
+          ${invoice.companies?.address ? `<p>${escapeHtml(invoice.companies.address)}</p>` : ''}
+          ${invoice.companies?.phone ? `<p>Phone: ${escapeHtml(invoice.companies.phone)}</p>` : ''}
+          ${invoice.companies?.email ? `<p>Email: ${escapeHtml(invoice.companies.email)}</p>` : ''}
+          ${invoice.companies?.gst_number ? `<p>GST: ${escapeHtml(invoice.companies.gst_number)}</p>` : ''}
         </div>
         <div style="flex: 1;">
           <h3 style="font-weight: 600; margin-bottom: 8px;">To:</h3>
-          <p style="font-weight: 500;">${invoice.clients?.name || ''}</p>
-          ${invoice.clients?.company_name ? `<p>${invoice.clients.company_name}</p>` : ''}
-          ${invoice.clients?.address ? `<p>${invoice.clients.address}</p>` : ''}
-          ${invoice.clients?.phone ? `<p>Phone: ${invoice.clients.phone}</p>` : ''}
-          ${invoice.clients?.email ? `<p>Email: ${invoice.clients.email}</p>` : ''}
-          ${invoice.clients?.gst_number ? `<p>GST: ${invoice.clients.gst_number}</p>` : ''}
+          <p style="font-weight: 500;">${escapeHtml(invoice.clients?.name)}</p>
+          ${invoice.clients?.company_name ? `<p>${escapeHtml(invoice.clients.company_name)}</p>` : ''}
+          ${invoice.clients?.address ? `<p>${escapeHtml(invoice.clients.address)}</p>` : ''}
+          ${invoice.clients?.phone ? `<p>Phone: ${escapeHtml(invoice.clients.phone)}</p>` : ''}
+          ${invoice.clients?.email ? `<p>Email: ${escapeHtml(invoice.clients.email)}</p>` : ''}
+          ${invoice.clients?.gst_number ? `<p>GST: ${escapeHtml(invoice.clients.gst_number)}</p>` : ''}
         </div>
       </div>
       
@@ -208,9 +216,9 @@ const [statusFilter, setStatusFilter] = useState<string>('all');
         <tbody>
           ${items.map((item: any) => `
             <tr>
-              <td style="padding: 12px; border: 1px solid #e5e7eb;">${item.description}</td>
-              <td style="padding: 12px; border: 1px solid #e5e7eb;">${item.hsnSacCode || '-'}</td>
-              <td style="text-align: right; padding: 12px; border: 1px solid #e5e7eb;">${item.quantity}</td>
+              <td style="padding: 12px; border: 1px solid #e5e7eb;">${escapeHtml(item.description)}</td>
+              <td style="padding: 12px; border: 1px solid #e5e7eb;">${escapeHtml(item.hsnSacCode) || '-'}</td>
+              <td style="text-align: right; padding: 12px; border: 1px solid #e5e7eb;">${escapeHtml(String(item.quantity))}</td>
               <td style="text-align: right; padding: 12px; border: 1px solid #e5e7eb;">₹${parseFloat(item.rate).toLocaleString('en-IN')}</td>
               <td style="text-align: right; padding: 12px; border: 1px solid #e5e7eb;">₹${parseFloat(item.amount).toLocaleString('en-IN')}</td>
             </tr>
@@ -254,19 +262,19 @@ const [statusFilter, setStatusFilter] = useState<string>('all');
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
           <div>
             <p style="color: #6b7280; font-size: 14px;">Bank Name</p>
-            <p style="font-weight: 500;">${invoice.companies?.bank_name || '-'}</p>
+            <p style="font-weight: 500;">${escapeHtml(invoice.companies?.bank_name) || '-'}</p>
           </div>
           <div>
             <p style="color: #6b7280; font-size: 14px;">Account Number</p>
-            <p style="font-weight: 500;">${invoice.companies?.account_number || '-'}</p>
+            <p style="font-weight: 500;">${escapeHtml(invoice.companies?.account_number) || '-'}</p>
           </div>
           <div>
             <p style="color: #6b7280; font-size: 14px;">IFSC Code</p>
-            <p style="font-weight: 500;">${invoice.companies?.ifsc_code || '-'}</p>
+            <p style="font-weight: 500;">${escapeHtml(invoice.companies?.ifsc_code) || '-'}</p>
           </div>
           <div>
             <p style="color: #6b7280; font-size: 14px;">Branch</p>
-            <p style="font-weight: 500;">${invoice.companies?.branch || '-'}</p>
+            <p style="font-weight: 500;">${escapeHtml(invoice.companies?.branch) || '-'}</p>
           </div>
         </div>
       </div>
