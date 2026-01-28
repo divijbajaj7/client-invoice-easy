@@ -245,7 +245,9 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      get_next_invoice_number: { Args: { user_uuid: string }; Returns: string }
+      get_next_invoice_number:
+        | { Args: never; Returns: string }
+        | { Args: { user_uuid: string }; Returns: string }
     }
     Enums: {
       [_ in never]: never
