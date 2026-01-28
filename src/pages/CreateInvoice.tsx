@@ -121,9 +121,8 @@ const CreateInvoice = () => {
     if (!user) return "1";
     
     try {
-      const { data, error } = await supabase.rpc('get_next_invoice_number', {
-        user_uuid: user.id
-      });
+      // Call RPC without user_uuid - function uses auth.uid() internally for security
+      const { data, error } = await supabase.rpc('get_next_invoice_number');
       
       if (error) throw error;
       return data || "1";

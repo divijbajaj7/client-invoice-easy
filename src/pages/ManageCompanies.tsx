@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,7 @@ const ManageCompanies = () => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [companies, setCompanies] = useState<any[]>([]);
+  const [companyLogoUrls, setCompanyLogoUrls] = useState<Record<string, string>>({});
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCompany, setEditingCompany] = useState<any>(null);
   const [companyData, setCompanyData] = useState({
@@ -35,6 +36,47 @@ const ManageCompanies = () => {
   });
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
+
+  // Get signed URL for a logo path
+  const getSignedLogoUrl = useCallback(async (logoPath: string): Promise<string | null> => {
+    if (!logoPath) return null;
+    
+    // Extract just the filename from full URL if necessary
+    const fileName = logoPath.includes('/') 
+      ? logoPath.split('/').pop() 
+      : logoPath;
+    
+    if (!fileName) return null;
+    
+    try {
+      const { data, error } = await supabase.storage
+        .from('company-logos')
+        .createSignedUrl(fileName, 3600); // 1 hour expiry
+      
+      if (error) return null;
+      return data?.signedUrl || null;
+    } catch {
+      return null;
+    }
+  }, []);
+
+  // Load signed URLs for all company logos
+  const loadLogoUrls = useCallback(async (companiesData: any[]) => {
+    const urls: Record<string, string> = {};
+    
+    await Promise.all(
+      companiesData.map(async (company) => {
+        if (company.logo_url) {
+          const signedUrl = await getSignedLogoUrl(company.logo_url);
+          if (signedUrl) {
+            urls[company.id] = signedUrl;
+          }
+        }
+      })
+    );
+    
+    setCompanyLogoUrls(urls);
+  }, [getSignedLogoUrl]);
 
   useEffect(() => {
     fetchCompanies();
@@ -54,7 +96,11 @@ const ManageCompanies = () => {
         return;
       }
 
-      setCompanies(data || []);
+      const companiesData = data || [];
+      setCompanies(companiesData);
+      
+      // Load signed URLs for logos
+      loadLogoUrls(companiesData);
     } catch (error) {
       // Error handled silently
     }
@@ -153,7 +199,8 @@ const ManageCompanies = () => {
 
     try {
       const fileExt = logoFile.name.split('.').pop();
-      const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+      // Store in user-specific folder for RLS policy compliance
+      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
       
       const { error: uploadError } = await supabase.storage
         .from('company-logos')
@@ -163,11 +210,8 @@ const ManageCompanies = () => {
         return null;
       }
 
-      const { data } = supabase.storage
-        .from('company-logos')
-        .getPublicUrl(fileName);
-
-      return data.publicUrl;
+      // Return just the file path, not the public URL (bucket is now private)
+      return fileName;
     } catch (error) {
       return null;
     }
@@ -510,9 +554,9 @@ const ManageCompanies = () => {
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between">
                     <div className="flex items-start gap-4">
-                      {company.logo_url && (
+                      {companyLogoUrls[company.id] && (
                         <img
-                          src={company.logo_url}
+                          src={companyLogoUrls[company.id]}
                           alt={`${company.name} logo`}
                           className="h-16 w-16 object-contain border rounded"
                         />
