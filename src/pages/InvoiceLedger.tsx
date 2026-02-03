@@ -28,7 +28,17 @@ import {
 } from '@/components/ui/dialog';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { ArrowLeft, Edit, Download, FileText, Image, CalendarIcon, Images } from 'lucide-react';
+import { ArrowLeft, Edit, Download, FileText, Image, CalendarIcon, Images, Trash2 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -47,6 +57,8 @@ const [statusFilter, setStatusFilter] = useState<string>('all');
   const [isDownloading, setIsDownloading] = useState(false);
   const [filterStartDate, setFilterStartDate] = useState<Date | undefined>();
   const [filterEndDate, setFilterEndDate] = useState<Date | undefined>();
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [invoiceToDelete, setInvoiceToDelete] = useState<{ id: string; invoice_number: string } | null>(null);
 
   const { data: invoices, isLoading } = useQuery({
     queryKey: ['invoices', user?.id],
@@ -109,6 +121,44 @@ const [statusFilter, setStatusFilter] = useState<string>('all');
       });
     },
   });
+
+  const deleteInvoiceMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('invoices')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['invoices'] });
+      toast({
+        title: 'Invoice deleted',
+        description: 'Invoice has been deleted successfully.',
+      });
+      setDeleteDialogOpen(false);
+      setInvoiceToDelete(null);
+    },
+    onError: (error) => {
+      toast({
+        title: 'Error',
+        description: 'Failed to delete invoice: ' + error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+
+  const handleDeleteClick = (invoice: { id: string; invoice_number: string }) => {
+    setInvoiceToDelete(invoice);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (invoiceToDelete) {
+      deleteInvoiceMutation.mutate(invoiceToDelete.id);
+    }
+  };
 
   const uniqueClients = Array.from(
     new Set(
@@ -730,6 +780,15 @@ const [statusFilter, setStatusFilter] = useState<string>('all');
                         >
                           <Edit className="w-4 h-4" />
                         </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteClick({ id: invoice.id, invoice_number: invoice.invoice_number })}
+                          title="Delete Invoice"
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -740,6 +799,27 @@ const [statusFilter, setStatusFilter] = useState<string>('all');
           </Table>
         </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Invoice</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete invoice {invoiceToDelete?.invoice_number}? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setInvoiceToDelete(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
