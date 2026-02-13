@@ -1,0 +1,1 @@
+ALTER TABLE public.clients ADD COLUMN cin_number text DEFAULT NULL;

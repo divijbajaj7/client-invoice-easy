@@ -43,6 +43,8 @@ interface InvoiceData {
     phone?: string;
     email?: string;
     gst_number?: string;
+    pan_number?: string;
+    cin_number?: string;
   };
 }
 
@@ -185,6 +187,16 @@ export const generateInvoicePDF = (invoice: InvoiceData) => {
     
     if (invoice.clients.gst_number) {
       doc.text(`GST: ${invoice.clients.gst_number}`, rightColumnX, clientYPos);
+      clientYPos += 6;
+    }
+    
+    if (invoice.clients.pan_number) {
+      doc.text(`PAN: ${invoice.clients.pan_number}`, rightColumnX, clientYPos);
+      clientYPos += 6;
+    }
+    
+    if (invoice.clients.cin_number) {
+      doc.text(`CIN: ${invoice.clients.cin_number}`, rightColumnX, clientYPos);
     }
   }
   

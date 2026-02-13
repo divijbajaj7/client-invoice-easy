@@ -31,6 +31,7 @@ interface Client {
   address?: string;
   gst_number?: string;
   pan_number?: string;
+  cin_number?: string;
 }
 
 interface ClientFormData {
@@ -41,6 +42,7 @@ interface ClientFormData {
   address: string;
   gst_number: string;
   pan_number: string;
+  cin_number: string;
 }
 
 const ManageClients = () => {
@@ -60,7 +62,8 @@ const ManageClients = () => {
       phone: "",
       address: "",
       gst_number: "",
-      pan_number: ""
+      pan_number: "",
+      cin_number: ""
     }
   });
 
@@ -151,7 +154,8 @@ const ManageClients = () => {
       phone: client.phone || "",
       address: client.address || "",
       gst_number: client.gst_number || "",
-      pan_number: client.pan_number || ""
+      pan_number: client.pan_number || "",
+      cin_number: client.cin_number || ""
     });
     setShowForm(true);
   };
@@ -301,7 +305,7 @@ const ManageClients = () => {
                       )}
                     />
 
-                    <FormField
+                     <FormField
                       control={form.control}
                       name="pan_number"
                       render={({ field }) => (
@@ -309,6 +313,20 @@ const ManageClients = () => {
                           <FormLabel>PAN Number</FormLabel>
                           <FormControl>
                             <Input placeholder="Enter PAN number" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="cin_number"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>CIN Number</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Enter CIN number" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -401,6 +419,12 @@ const ManageClients = () => {
                             <div className="flex items-center text-muted-foreground">
                               <FileText className="h-4 w-4 mr-2" />
                               PAN: {client.pan_number}
+                            </div>
+                          )}
+                          {client.cin_number && (
+                            <div className="flex items-center text-muted-foreground">
+                              <FileText className="h-4 w-4 mr-2" />
+                              CIN: {client.cin_number}
                             </div>
                           )}
                           {client.address && (
