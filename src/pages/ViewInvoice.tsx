@@ -46,6 +46,8 @@ interface Invoice {
     phone: string | null;
     email: string | null;
     gst_number: string | null;
+    pan_number: string | null;
+    cin_number: string | null;
   };
 }
 
@@ -66,7 +68,7 @@ const ViewInvoice = () => {
           .select(`
             *,
             companies (name, address, phone, email, gst_number, bank_name, account_number, ifsc_code, branch, pan_number),
-            clients (name, company_name, address, phone, email, gst_number)
+            clients (name, company_name, address, phone, email, gst_number, pan_number, cin_number)
           `)
           .eq("id", id)
           .eq("user_id", user.id)
@@ -210,6 +212,8 @@ const ViewInvoice = () => {
                   {invoice.clients.phone && <p>Phone: {invoice.clients.phone}</p>}
                   {invoice.clients.email && <p>Email: {invoice.clients.email}</p>}
                   {invoice.clients.gst_number && <p>GST: {invoice.clients.gst_number}</p>}
+                  {invoice.clients.pan_number && <p>PAN: {invoice.clients.pan_number}</p>}
+                  {invoice.clients.cin_number && <p>CIN: {invoice.clients.cin_number}</p>}
                 </div>
               </div>
             </div>
