@@ -89,6 +89,7 @@ const [statusFilter, setStatusFilter] = useState<string>('all');
           )
         `)
         .eq('user_id', user?.id)
+        .order('invoice_number', { ascending: false })
         .order('invoice_date', { ascending: false });
 
       if (error) throw error;
