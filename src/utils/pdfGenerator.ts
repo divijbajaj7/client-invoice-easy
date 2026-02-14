@@ -12,6 +12,7 @@ interface InvoiceData {
   invoice_number: string;
   invoice_date: string;
   due_date?: string;
+  invoice_type?: string;
   subtotal: number;
   gst_rate?: number;
   gst_amount?: number;
@@ -86,7 +87,7 @@ export const generateInvoicePDF = (invoice: InvoiceData) => {
   doc.setFontSize(28);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(0, 0, 0);
-  const invoiceTitle = 'INVOICE';
+  const invoiceTitle = (invoice.invoice_type || 'INVOICE').toUpperCase();
   const titleWidth = doc.getTextWidth(invoiceTitle);
   doc.text(invoiceTitle, (pageWidth - titleWidth) / 2, yPos);
   

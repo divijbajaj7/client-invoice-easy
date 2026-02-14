@@ -14,7 +14,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { ArrowLeft, Plus, Trash2 } from "lucide-react";
 
+const INVOICE_TYPES = [
+  "Invoice",
+  "Reimbursement Invoice",
+  "Purchase Order",
+  "Proforma Invoice",
+] as const;
+
 const invoiceSchema = z.object({
+  invoiceType: z.string().min(1, "Invoice type is required"),
   companyId: z.string().min(1, "Company is required"),
   clientId: z.string().min(1, "Client is required"),
   invoiceNumber: z.string().min(1, "Invoice number is required"),
@@ -47,6 +55,7 @@ const EditInvoice = () => {
   const form = useForm<z.infer<typeof invoiceSchema>>({
     resolver: zodResolver(invoiceSchema),
     defaultValues: {
+      invoiceType: "Invoice",
       companyId: "",
       clientId: "",
       invoiceNumber: "",
@@ -80,6 +89,7 @@ const EditInvoice = () => {
 
         // Populate form with existing data
         form.reset({
+          invoiceType: invoice.invoice_type || "Invoice",
           companyId: invoice.company_id,
           clientId: invoice.client_id,
           invoiceNumber: invoice.invoice_number,
@@ -190,6 +200,7 @@ const EditInvoice = () => {
           total_amount: total,
           items: JSON.parse(JSON.stringify(items)),
           notes: values.notes || null,
+          invoice_type: values.invoiceType,
         })
         .eq("id", id)
         .eq("user_id", user.id);
@@ -238,6 +249,31 @@ const EditInvoice = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="invoiceType"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Invoice Type</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select type" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {INVOICE_TYPES.map((type) => (
+                              <SelectItem key={type} value={type}>
+                                {type}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
                   <FormField
                     control={form.control}
                     name="companyId"
