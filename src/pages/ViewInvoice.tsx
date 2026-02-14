@@ -25,6 +25,7 @@ interface Invoice {
   cgst_rate: number;
   total_amount: number;
   status: string;
+  invoice_type: string;
   notes: string | null;
   items: any;
   companies: {
@@ -185,7 +186,7 @@ const ViewInvoice = () => {
             <div className="text-center text-xl font-semibold text-primary mb-1">
               {invoice.companies.name}
             </div>
-            <CardTitle className="text-3xl font-bold text-center">INVOICE</CardTitle>
+            <CardTitle className="text-3xl font-bold text-center">{(invoice.invoice_type || 'INVOICE').toUpperCase()}</CardTitle>
             <div className="text-center text-muted-foreground">
               Invoice No- {invoice.invoice_number}
             </div>

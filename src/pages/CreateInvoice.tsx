@@ -15,7 +15,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 
+const INVOICE_TYPES = [
+  "Invoice",
+  "Reimbursement Invoice",
+  "Purchase Order",
+  "Proforma Invoice",
+] as const;
+
 const invoiceSchema = z.object({
+  invoiceType: z.string().min(1, "Invoice type is required"),
   companyId: z.string().min(1, "Company is required"),
   clientId: z.string().min(1, "Client is required"),
   invoiceNumber: z.string().min(1, "Invoice number is required"),
@@ -47,6 +55,7 @@ const CreateInvoice = () => {
   const form = useForm<z.infer<typeof invoiceSchema>>({
     resolver: zodResolver(invoiceSchema),
     defaultValues: {
+      invoiceType: "Invoice",
       companyId: "",
       clientId: "",
       invoiceNumber: "",
@@ -179,6 +188,7 @@ const CreateInvoice = () => {
         items: JSON.parse(JSON.stringify(items)),
         notes: values.notes || null,
         status: "draft",
+        invoice_type: values.invoiceType,
       });
 
       if (error) throw error;
@@ -225,7 +235,7 @@ const CreateInvoice = () => {
         {form.watch("companyId") && (
           <div className="mb-6 text-center">
             <h2 className="text-2xl font-bold text-primary">
-              {companies.find(c => c.id === form.watch("companyId"))?.name} Invoice
+              {companies.find(c => c.id === form.watch("companyId"))?.name} {form.watch("invoiceType")}
             </h2>
           </div>
         )}
@@ -239,6 +249,31 @@ const CreateInvoice = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="invoiceType"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Invoice Type</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select type" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {INVOICE_TYPES.map((type) => (
+                              <SelectItem key={type} value={type}>
+                                {type}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
                   <FormField
                     control={form.control}
                     name="companyId"

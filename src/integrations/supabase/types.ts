@@ -158,6 +158,7 @@ export type Database = {
           igst_rate: number | null
           invoice_date: string
           invoice_number: string
+          invoice_type: string
           items: Json
           notes: string | null
           sgst_amount: number | null
@@ -183,6 +184,7 @@ export type Database = {
           igst_rate?: number | null
           invoice_date: string
           invoice_number: string
+          invoice_type?: string
           items?: Json
           notes?: string | null
           sgst_amount?: number | null
@@ -208,6 +210,7 @@ export type Database = {
           igst_rate?: number | null
           invoice_date?: string
           invoice_number?: string
+          invoice_type?: string
           items?: Json
           notes?: string | null
           sgst_amount?: number | null
