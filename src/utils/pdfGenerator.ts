@@ -91,16 +91,25 @@ export const generateInvoicePDF = (invoice: InvoiceData) => {
   const titleWidth = doc.getTextWidth(invoiceTitle);
   doc.text(invoiceTitle, (pageWidth - titleWidth) / 2, yPos);
   
-  // Invoice number centered below title
+  // Invoice number and date on the left below title
   yPos += 15;
-  doc.setFontSize(14);
+  doc.setFontSize(11);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(128, 128, 128);
-  const invoiceNumberText = `Invoice No- ${invoice.invoice_number}`;
-  const numberWidth = doc.getTextWidth(invoiceNumberText);
-  doc.text(invoiceNumberText, (pageWidth - numberWidth) / 2, yPos);
+  doc.text('Invoice No:', margin, yPos);
+  doc.setTextColor(0, 0, 0);
+  doc.setFont('helvetica', 'bold');
+  doc.text(invoice.invoice_number, margin + 28, yPos);
   
-  yPos += 25;
+  yPos += 8;
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(128, 128, 128);
+  doc.text('Invoice Date:', margin, yPos);
+  doc.setTextColor(0, 0, 0);
+  doc.setFont('helvetica', 'bold');
+  doc.text(new Date(invoice.invoice_date).toLocaleDateString('en-GB'), margin + 32, yPos);
+  
+  yPos += 15;
   
   // From and To sections side by side
   doc.setFontSize(14);
@@ -141,6 +150,11 @@ export const generateInvoicePDF = (invoice: InvoiceData) => {
       doc.text(line, leftColumnX, yPos);
       yPos += 6;
     });
+  }
+  
+  if (companyDetails.pan) {
+    doc.text(`PAN: ${companyDetails.pan}`, leftColumnX, yPos);
+    yPos += 6;
   }
   
   if (companyDetails.gst) {
@@ -201,18 +215,8 @@ export const generateInvoicePDF = (invoice: InvoiceData) => {
     }
   }
   
-  // Invoice Date
-  yPos = Math.max(yPos, clientYPos) + 20;
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(128, 128, 128);
-  doc.text('Invoice Date', leftColumnX, yPos);
-  
-  doc.setTextColor(0, 0, 0);
-  doc.setFont('helvetica', 'bold');
-  doc.text(new Date(invoice.invoice_date).toLocaleDateString('en-GB'), leftColumnX, yPos + 8);
-  
-  yPos += 25;
+  // Continue after From/To sections
+  yPos = Math.max(yPos, clientYPos) + 15;
   
   // Items table with proper column widths
   const tableStartY = yPos;
