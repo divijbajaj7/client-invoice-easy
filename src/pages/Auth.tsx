@@ -37,18 +37,20 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      // Validate input
-      const validationResult = authSchema.safeParse({ email, password });
-      
-      if (!validationResult.success) {
-        const firstError = validationResult.error.errors[0];
-        toast({
-          variant: "destructive",
-          title: "Validation error",
-          description: firstError.message,
-        });
-        setLoading(false);
-        return;
+      // Validate input (strict password rules only for signup)
+      if (!isLogin) {
+        const validationResult = authSchema.safeParse({ email, password });
+        
+        if (!validationResult.success) {
+          const firstError = validationResult.error.errors[0];
+          toast({
+            variant: "destructive",
+            title: "Validation error",
+            description: firstError.message,
+          });
+          setLoading(false);
+          return;
+        }
       }
 
       if (isLogin) {
