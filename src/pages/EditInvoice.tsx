@@ -15,7 +15,7 @@ import { toast } from "sonner";
 import { ArrowLeft, Plus, Trash2 } from "lucide-react";
 
 const INVOICE_TYPES = [
-  "Invoice",
+  "Tax Invoice",
   "Reimbursement Invoice",
   "Purchase Order",
   "Proforma Invoice",
