@@ -186,7 +186,7 @@ const ViewInvoice = () => {
             <div className="text-center text-xl font-semibold text-primary mb-1">
               {invoice.companies.name}
             </div>
-            <CardTitle className="text-3xl font-bold text-center">{(invoice.invoice_type || 'INVOICE').toUpperCase()}</CardTitle>
+            <CardTitle className="text-3xl font-bold text-center">{(invoice.invoice_type || 'Tax Invoice').toUpperCase()}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Company and Client Info */}

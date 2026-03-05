@@ -87,7 +87,7 @@ export const generateInvoicePDF = (invoice: InvoiceData) => {
   doc.setFontSize(28);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(0, 0, 0);
-  const invoiceTitle = (invoice.invoice_type || 'INVOICE').toUpperCase();
+  const invoiceTitle = (invoice.invoice_type || 'Tax Invoice').toUpperCase();
   const titleWidth = doc.getTextWidth(invoiceTitle);
   doc.text(invoiceTitle, (pageWidth - titleWidth) / 2, yPos);
   
