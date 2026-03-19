@@ -733,6 +733,7 @@ const [statusFilter, setStatusFilter] = useState<string>('all');
                     <TableCell>
                       {invoice.clients?.company_name || invoice.clients?.name}
                     </TableCell>
+                    <TableCell>₹{subtotal.toFixed(2)}</TableCell>
                     <TableCell>₹{Number(invoice.total_amount).toFixed(2)}</TableCell>
                     <TableCell>
                       ₹{gstAmount.toFixed(2)}
