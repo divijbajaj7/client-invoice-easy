@@ -705,13 +705,13 @@ const [statusFilter, setStatusFilter] = useState<string>('all');
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={9} className="text-center py-8">
+                   <TableCell colSpan={10} className="text-center py-8">
                     Loading...
                   </TableCell>
                 </TableRow>
               ) : filteredInvoices?.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
                     No invoices found
                   </TableCell>
                 </TableRow>
