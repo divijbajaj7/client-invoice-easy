@@ -693,6 +693,7 @@ const [statusFilter, setStatusFilter] = useState<string>('all');
                 <TableHead>Date</TableHead>
                 <TableHead>Invoice No</TableHead>
                 <TableHead>Client</TableHead>
+                <TableHead>Original Amount</TableHead>
                 <TableHead>Amount</TableHead>
                 <TableHead>GST Amount</TableHead>
                 <TableHead>TDS (10%)</TableHead>
