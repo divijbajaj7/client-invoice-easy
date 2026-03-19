@@ -693,6 +693,7 @@ const [statusFilter, setStatusFilter] = useState<string>('all');
                 <TableHead>Date</TableHead>
                 <TableHead>Invoice No</TableHead>
                 <TableHead>Client</TableHead>
+                <TableHead>Original Amount</TableHead>
                 <TableHead>Amount</TableHead>
                 <TableHead>GST Amount</TableHead>
                 <TableHead>TDS (10%)</TableHead>
@@ -704,13 +705,13 @@ const [statusFilter, setStatusFilter] = useState<string>('all');
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={9} className="text-center py-8">
+                   <TableCell colSpan={10} className="text-center py-8">
                     Loading...
                   </TableCell>
                 </TableRow>
               ) : filteredInvoices?.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
                     No invoices found
                   </TableCell>
                 </TableRow>
@@ -732,6 +733,7 @@ const [statusFilter, setStatusFilter] = useState<string>('all');
                     <TableCell>
                       {invoice.clients?.company_name || invoice.clients?.name}
                     </TableCell>
+                    <TableCell>₹{subtotal.toFixed(2)}</TableCell>
                     <TableCell>₹{Number(invoice.total_amount).toFixed(2)}</TableCell>
                     <TableCell>
                       ₹{gstAmount.toFixed(2)}
