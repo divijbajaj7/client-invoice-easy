@@ -324,13 +324,23 @@ const ViewInvoice = () => {
               </div>
             </div>
 
-            {/* Notes */}
-            {invoice.notes && (
+            {/* Notes and Signature */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <h3 className="font-semibold mb-2">Notes:</h3>
-                <p className="text-muted-foreground">{invoice.notes}</p>
+                {invoice.notes && (
+                  <>
+                    <h3 className="font-semibold mb-2">Notes:</h3>
+                    <p className="text-muted-foreground">{invoice.notes}</p>
+                  </>
+                )}
               </div>
-            )}
+              <div className="flex flex-col items-end justify-end">
+                <p className="text-sm text-muted-foreground mb-8">Authorized Signatory</p>
+                <p className="text-2xl font-bold italic text-foreground" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
+                  Divij Bajaj
+                </p>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
