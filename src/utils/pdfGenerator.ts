@@ -399,23 +399,46 @@ export const generateInvoicePDF = (invoice: InvoiceData) => {
   
   yPos = bankingStartY + (rowHeight * 3) + 10;
   
-  // Notes if any
+  // Notes and Signature section side by side
+  const notesSignatureY = yPos + 10;
+  
+  // Notes on the left
   if (invoice.notes) {
-    yPos += 10;
+    let notesY = notesSignatureY;
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(0, 0, 0);
-    doc.text('Notes:', leftColumnX, yPos);
+    doc.text('Notes:', leftColumnX, notesY);
     
-    yPos += 10;
+    notesY += 10;
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(64, 64, 64);
-    const noteLines = doc.splitTextToSize(invoice.notes, pageWidth - 2 * margin);
+    const noteLines = doc.splitTextToSize(invoice.notes, maxColumnWidth);
     noteLines.forEach((line: string) => {
-      doc.text(line, leftColumnX, yPos);
-      yPos += 6;
+      doc.text(line, leftColumnX, notesY);
+      notesY += 6;
     });
+    yPos = Math.max(yPos, notesY);
   }
+  
+  // Signature on the right
+  let sigY = notesSignatureY;
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(128, 128, 128);
+  const sigLabelText = 'Authorized Signatory';
+  const sigLabelWidth = doc.getTextWidth(sigLabelText);
+  doc.text(sigLabelText, pageWidth - margin - sigLabelWidth, sigY);
+  
+  sigY += 20;
+  doc.setFontSize(18);
+  doc.setFont('helvetica', 'bolditalic');
+  doc.setTextColor(0, 0, 0);
+  const signatureName = 'Divij Bajaj';
+  const sigNameWidth = doc.getTextWidth(signatureName);
+  doc.text(signatureName, pageWidth - margin - sigNameWidth, sigY);
+  
+  yPos = Math.max(yPos, sigY) + 10;
   
   // Electronic signature disclaimer
   yPos += 15;
