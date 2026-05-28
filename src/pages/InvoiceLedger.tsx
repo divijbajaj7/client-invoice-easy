@@ -191,7 +191,7 @@ const [statusFilter, setStatusFilter] = useState<string>('all');
     .reduce((sum, invoice) => sum + Number(invoice.total_amount), 0);
 
   const pendingAmount = filteredInvoices
-    ?.filter((inv) => inv.status !== 'paid')
+    ?.filter((inv) => inv.status !== 'paid' && inv.status !== 'cancelled')
     .reduce((sum, invoice) => sum + Number(invoice.total_amount), 0);
 
   const totalGst = filteredInvoices?.reduce(
@@ -605,6 +605,7 @@ const [statusFilter, setStatusFilter] = useState<string>('all');
               <SelectItem value="draft">Draft</SelectItem>
               <SelectItem value="sent">Sent</SelectItem>
               <SelectItem value="paid">Paid</SelectItem>
+              <SelectItem value="cancelled">Cancelled</SelectItem>
             </SelectContent>
           </Select>
           
@@ -754,6 +755,7 @@ const [statusFilter, setStatusFilter] = useState<string>('all');
                           <SelectItem value="draft">Draft</SelectItem>
                           <SelectItem value="sent">Sent</SelectItem>
                           <SelectItem value="paid">Paid</SelectItem>
+                          <SelectItem value="cancelled">Cancelled</SelectItem>
                         </SelectContent>
                       </Select>
                     </TableCell>
