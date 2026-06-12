@@ -192,7 +192,16 @@ const [statusFilter, setStatusFilter] = useState<string>('all');
 
   const pendingAmount = filteredInvoices
     ?.filter((inv) => inv.status !== 'paid' && inv.status !== 'cancelled')
-    .reduce((sum, invoice) => sum + Number(invoice.total_amount), 0);
+    .reduce((sum, invoice) => {
+      const subtotal = Number(invoice.subtotal) || 0;
+      const gstAmount =
+        Number(invoice.igst_amount || 0) +
+        Number(invoice.cgst_amount || 0) +
+        Number(invoice.sgst_amount || 0);
+      const tds = subtotal * 0.10;
+      const finalAmount = (subtotal - tds) + gstAmount;
+      return sum + finalAmount;
+    }, 0);
 
   const totalGst = filteredInvoices?.reduce(
     (sum, invoice) => sum + Number(invoice.igst_amount || 0) + Number(invoice.cgst_amount || 0) + Number(invoice.sgst_amount || 0),
