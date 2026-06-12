@@ -181,10 +181,10 @@ const [statusFilter, setStatusFilter] = useState<string>('all');
     return statusMatch && clientMatch && dateMatch;
   });
 
-  const totalAmount = filteredInvoices?.reduce(
-    (sum, invoice) => sum + Number(invoice.total_amount),
-    0
-  );
+  // Total Amount = sum of Original Amount (subtotal, pre-GST revenue), excluding cancelled
+  const totalAmount = filteredInvoices
+    ?.filter((inv) => inv.status !== 'cancelled')
+    .reduce((sum, invoice) => sum + Number(invoice.subtotal || 0), 0);
 
   const receivedAmount = filteredInvoices
     ?.filter((inv) => inv.status === 'paid')
@@ -207,6 +207,10 @@ const [statusFilter, setStatusFilter] = useState<string>('all');
     (sum, invoice) => sum + Number(invoice.igst_amount || 0) + Number(invoice.cgst_amount || 0) + Number(invoice.sgst_amount || 0),
     0
   );
+
+  const totalTds = filteredInvoices
+    ?.filter((inv) => inv.status !== 'cancelled')
+    .reduce((sum, invoice) => sum + Number(invoice.subtotal || 0) * 0.10, 0);
 
   // HTML escape function to prevent XSS attacks
   const escapeHtml = (text: string | null | undefined): string => {
@@ -584,7 +588,7 @@ const [statusFilter, setStatusFilter] = useState<string>('all');
         </div>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
           <div className="bg-card p-4 rounded-lg border">
             <p className="text-sm text-muted-foreground">Total Amount</p>
             <p className="text-2xl font-bold">₹{totalAmount?.toFixed(2) || '0.00'}</p>
@@ -592,6 +596,10 @@ const [statusFilter, setStatusFilter] = useState<string>('all');
           <div className="bg-card p-4 rounded-lg border">
             <p className="text-sm text-muted-foreground">Total GST</p>
             <p className="text-2xl font-bold">₹{totalGst?.toFixed(2) || '0.00'}</p>
+          </div>
+          <div className="bg-card p-4 rounded-lg border">
+            <p className="text-sm text-muted-foreground">Total TDS Collected</p>
+            <p className="text-2xl font-bold">₹{totalTds?.toFixed(2) || '0.00'}</p>
           </div>
           <div className="bg-card p-4 rounded-lg border">
             <p className="text-sm text-muted-foreground">Received</p>
@@ -602,6 +610,7 @@ const [statusFilter, setStatusFilter] = useState<string>('all');
             <p className="text-2xl font-bold text-orange-600">₹{pendingAmount?.toFixed(2) || '0.00'}</p>
           </div>
         </div>
+
 
         {/* Filters */}
         <div className="mb-4 flex flex-wrap gap-4">
