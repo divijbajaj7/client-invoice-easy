@@ -588,7 +588,7 @@ const [statusFilter, setStatusFilter] = useState<string>('all');
         </div>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
           <div className="bg-card p-4 rounded-lg border">
             <p className="text-sm text-muted-foreground">Total Amount</p>
             <p className="text-2xl font-bold">₹{totalAmount?.toFixed(2) || '0.00'}</p>
@@ -596,6 +596,10 @@ const [statusFilter, setStatusFilter] = useState<string>('all');
           <div className="bg-card p-4 rounded-lg border">
             <p className="text-sm text-muted-foreground">Total GST</p>
             <p className="text-2xl font-bold">₹{totalGst?.toFixed(2) || '0.00'}</p>
+          </div>
+          <div className="bg-card p-4 rounded-lg border">
+            <p className="text-sm text-muted-foreground">Total TDS Collected</p>
+            <p className="text-2xl font-bold">₹{totalTds?.toFixed(2) || '0.00'}</p>
           </div>
           <div className="bg-card p-4 rounded-lg border">
             <p className="text-sm text-muted-foreground">Received</p>
@@ -606,6 +610,7 @@ const [statusFilter, setStatusFilter] = useState<string>('all');
             <p className="text-2xl font-bold text-orange-600">₹{pendingAmount?.toFixed(2) || '0.00'}</p>
           </div>
         </div>
+
 
         {/* Filters */}
         <div className="mb-4 flex flex-wrap gap-4">
