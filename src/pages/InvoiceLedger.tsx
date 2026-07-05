@@ -43,6 +43,7 @@ import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import html2canvas from 'html2canvas';
+import * as XLSX from 'xlsx';
 
 const InvoiceLedger = () => {
   const navigate = useNavigate();
@@ -393,7 +394,7 @@ const [statusFilter, setStatusFilter] = useState<string>('all');
     }
   };
 
-  const exportTableToCSV = () => {
+  const exportTableToCSV = async () => {
     if (!filteredInvoices || filteredInvoices.length === 0) {
       toast({
         title: 'No data to export',
@@ -403,18 +404,19 @@ const [statusFilter, setStatusFilter] = useState<string>('all');
       return;
     }
 
-    const csvData = [
-      ['Date', 'Invoice No', 'Client', 'Amount', 'GST Amount', 'TDS (10%)', 'Final Amount', 'Status'],
+    const invoicesRows = [
+      ['Date', 'Invoice No', 'Client', 'Original Amount', 'Amount', 'GST Amount', 'TDS (10%)', 'Final Amount', 'Status'],
       ...filteredInvoices.map((invoice) => {
         const subtotal = Number(invoice.subtotal);
         const gstAmount = Number(invoice.igst_amount || 0) + Number(invoice.cgst_amount || 0) + Number(invoice.sgst_amount || 0);
         const tds = subtotal * 0.10;
         const finalAmount = (subtotal - tds) + gstAmount;
-        
+
         return [
           format(new Date(invoice.invoice_date), 'dd MMM yyyy'),
           invoice.invoice_number,
           invoice.clients?.company_name || invoice.clients?.name,
+          subtotal.toFixed(2),
           Number(invoice.total_amount).toFixed(2),
           gstAmount.toFixed(2),
           tds.toFixed(2),
@@ -424,22 +426,31 @@ const [statusFilter, setStatusFilter] = useState<string>('all');
       }),
     ];
 
-    const csvContent = csvData.map(row => row.join(',')).join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', `invoice_ledger_${format(new Date(), 'yyyy-MM-dd')}.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    // Fetch all clients with GST for sheet 2
+    const { data: clientsData } = await supabase
+      .from('clients')
+      .select('name, company_name, gst_number')
+      .eq('user_id', user?.id)
+      .order('name');
+
+    const clientsRows = [
+      ['Client Name', 'Company Name', 'GST Number'],
+      ...(clientsData || []).map((c) => [c.name || '', c.company_name || '', c.gst_number || '']),
+    ];
+
+    const wb = XLSX.utils.book_new();
+    const ws1 = XLSX.utils.aoa_to_sheet(invoicesRows);
+    const ws2 = XLSX.utils.aoa_to_sheet(clientsRows);
+    XLSX.utils.book_append_sheet(wb, ws1, 'Invoices');
+    XLSX.utils.book_append_sheet(wb, ws2, 'Clients');
+    XLSX.writeFile(wb, `invoice_ledger_${format(new Date(), 'yyyy-MM-dd')}.xlsx`);
 
     toast({
       title: 'Export successful',
-      description: 'Invoice ledger has been exported to CSV.',
+      description: 'Invoice ledger exported with Invoices and Clients sheets.',
     });
   };
+
 
   const downloadBulkJPEGs = async () => {
     if (!startDate || !endDate) {
