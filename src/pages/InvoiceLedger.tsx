@@ -43,6 +43,7 @@ import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import html2canvas from 'html2canvas';
+import * as XLSX from 'xlsx';
 
 const InvoiceLedger = () => {
   const navigate = useNavigate();
